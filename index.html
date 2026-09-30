@@ -75,7 +75,7 @@
             <div class="header-logo-wrapper">
                 <img src="logo-aamb.png" alt="Logo AAMB">
             </div>
-            <h1>AAMB - JTB 2026 - Ateliers v0.04</h1>
+            <h1>AAMB - JTB 2026 - Ateliers v0.05</h1>
             <p class="subtitle">Formulaire d'Inscription aux Ateliers</p>
         </div>
         
@@ -317,10 +317,17 @@
                 if (!selections[i]) missing.push(i);
             }
             
+            // 1. Vérification stricte des 5 choix
+            const missing = [];
+            for (let i = 1; i <= 5; i++) {
+              if (!selections[i]) missing.push(i);
+            }
             if (missing.length > 0) {
-                alert("⚠️ Veuillez sélectionner vos 5 choix d'ateliers.\nChoix manquants : " + missing.join(', '));
-                console.log("🔴 Soumission annulée : choix manquants", missing);
-                return;
+              // ✅ CORRECTION ICI : utilisation des backticks (`) pour le saut de ligne
+              alert(`⚠️ Veuillez sélectionner vos 5 choix d'ateliers.
+            Choix manquants : ${missing.join(', ')}`);
+              console.log("🔴 Soumission annulée : choix manquants", missing);
+              return;
             }
 
             // 2. Génération du token si inexistant
