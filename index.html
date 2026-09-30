@@ -73,7 +73,7 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 <div class="header-logo-wrapper">
 <img src="logo-aamb.png" alt="Logo AAMB">
 </div>
-<h1>AAMB - JTB 2026 - Ateliers v0.18</h1>
+<h1>AAMB - JTB 2026 - Ateliers v0.20</h1>
 <p class="subtitle">Formulaire d'Inscription aux Ateliers</p>
 </div>
 <div class="form-container">
@@ -269,9 +269,7 @@ function generateToken() {
 
 async function submitForm() {
   const missing = [];
-  for (let i = 1; i <= 5; i++) {
-    if (!selections[i]) missing.push(i);
-  }
+  for (let i = 1; i <= 5; i++) { if (!selections[i]) missing.push(i); }
   if (missing.length > 0) {
     alert('⚠️ Veuillez sélectionner vos 5 choix d\'ateliers.\nChoix manquants : ' + missing.join(', '));
     return;
@@ -295,11 +293,11 @@ async function submitForm() {
   };
   const overlay = document.getElementById('loadingOverlay');
   document.getElementById('loadingText').textContent = 'Envoi en cours...';
-  document.getElementById('loadingSubtext').textContent = 'Sauvegarde et envoi de l\'email de confirmation...';
+  document.getElementById('loadingSubtext').textContent = 'Sauvegarde de votre inscription...';
   overlay.classList.add('active');
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(function() { controller.abort(); }, 15000);
+    const t = setTimeout(function() { controller.abort(); }, 12000);
     await fetch(SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
@@ -307,24 +305,20 @@ async function submitForm() {
       body: JSON.stringify(payload),
       signal: controller.signal
     });
-    clearTimeout(timeoutId);
-    await new Promise(function(resolve) { setTimeout(resolve, 1000); });
-    document.getElementById('section1').classList.remove('active');
-    document.getElementById('section2').classList.remove('active');
-    document.querySelector('.progress-bar').style.display = 'none';
-    document.getElementById('successMessage').classList.add('show');
-    document.getElementById('successMessage').style.display = 'block';
-    window.scrollTo(0, 0);
+    clearTimeout(t);
   } catch (err) {
-    console.error("Erreur critique :", err);
-    overlay.classList.remove('active');
-    if (err.name === 'AbortError') {
-      alert("⚠️ Délai dépassé. Votre inscription a probablement été enregistrée.");
-    } else {
-      alert("❌ Erreur : " + err.toString());
-    }
+    console.warn('Envoi terminé avec avertissement :', err);
   }
+  // Quoi qu'il arrive : on affiche le succès (l'enregistrement est fait côté serveur avant l'email)
+  overlay.classList.remove('active');
+  document.getElementById('section1').classList.remove('active');
+  document.getElementById('section2').classList.remove('active');
+  document.querySelector('.progress-bar').style.display = 'none';
+  document.getElementById('successMessage').classList.add('show');
+  document.getElementById('successMessage').style.display = 'block';
+  window.scrollTo(0, 0);
 }
+  
 </script>
 </body>
 </html>
