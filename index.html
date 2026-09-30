@@ -75,7 +75,7 @@
             <div class="header-logo-wrapper">
                 <img src="logo-aamb.png" alt="Logo AAMB">
             </div>
-            <h1>AAMB - JTB 2026 - Ateliers v0.03</h1>
+            <h1>AAMB - JTB 2026 - Ateliers v0.04</h1>
             <p class="subtitle">Formulaire d'Inscription aux Ateliers</p>
         </div>
         
@@ -145,8 +145,10 @@
                     <h2>🎉 Inscription enregistrée !</h2>
                     <p>Vos vœux pour les ateliers ont bien été pris en compte.</p>
                     <p style="margin-top: 10px; color: #666; font-size: 14px;">Un email de confirmation avec un lien de modification vous a été envoyé.</p>
-                    <p style="margin-top: 20px;">
-                        <button type="button" class="btn-primary" onclick="window.location.href = window.location.pathname;">Remplir un nouveau formulaire</button>
+                    <p style="margin-top: 25px; padding: 15px; background: #e8f4fd; border-radius: 8px; color: #0a4c6a; font-size: 15px; line-height: 1.5;">
+                      ℹ️ <strong>Une seule inscription par personne.</strong><br>
+                      Vous pouvez modifier vos choix à tout moment en utilisant le lien présent dans l'email de confirmation que vous venez de recevoir.
+                    </p>
                     </p>
                 </div>
             </form>
@@ -155,7 +157,7 @@
 
     <script>
         // ⚠️ REMPLACEZ CETTE URL PAR VOTRE URL DE DÉPLOIEMENT GOOGLE APPS SCRIPT
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzcG4qCooMOY4XCOt8Y8aFkqUuGems3wZNmbDhvne9y8GxPjbYN8cI4wwJdXlBxGa8l/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyaZ2ZI-a8LKcF_aON1bOgFIQd2esVawbzZopJo5Fk1vaFaBJrPs0i7GzpCCrgs7gjR/exec';
 
         let workshopsList = [];
         let selections = { 1: '', 2: '', 3: '', 4: '', 5: '' };
@@ -233,11 +235,17 @@
                     if (!isSelectedElsewhere) {
                         const opt = document.createElement('option');
                         opt.value = ws.id;
-                        opt.textContent = `${ws.title} (${ws.company})`;
-                        if (ws.id === currentValue) opt.selected = true;
-                        select.appendChild(opt);
-                    }
-                });
+                        workshopsList.forEach(ws => {
+                            const isSelectedElsewhere = Object.keys(selections).some(k => parseInt(k) !== i && selections[k] === ws.id);
+                            if (!isSelectedElsewhere) {
+                                const opt = document.createElement('option');
+                                opt.value = ws.id;
+                                // MODIFICATION ICI : Société - Titre Atelier
+                                opt.textContent = `${ws.company} - ${ws.title}`; 
+                                if (ws.id === currentValue) opt.selected = true;
+                                select.appendChild(opt);
+                          }
+                        });
                 select.onfocus = () => displayWorkshopDetail(selections[i]);
             }
         }
