@@ -73,7 +73,7 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
     <div class="header-logo-wrapper">
       <img src="logo-aamb.png" alt="Logo AAMB">
     </div>
-    <h1>AAMB - JTB 2026 - Ateliers v0.11</h1>
+    <h1>AAMB - JTB 2026 - Ateliers v0.12</h1>
     <p class="subtitle">Formulaire d'Inscription aux Ateliers</p>
   </div>
   <div class="form-container">
@@ -81,7 +81,6 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
       <div class="progress-fill" id="progressBar" style="width: 50%"></div>
     </div>
     <form id="atelierForm">
-      <!-- SECTION 1: INFORMATIONS -->
       <div class="section active" id="section1">
         <h2 class="section-title">👤 Vos Informations</h2>
         <div class="sub-section">
@@ -105,8 +104,6 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
           <button type="button" class="btn-primary" onclick="nextSection(1)" style="width: 100%;">Choisir mes ateliers →</button>
         </div>
       </div>
-      
-      <!-- SECTION 2: CHOIX DES ATELIERS -->
       <div class="section" id="section2">
         <h2 class="section-title">🛠️ Choix des Ateliers</h2>
         <div class="info-box">
@@ -130,8 +127,6 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
           <button type="button" class="btn-primary" id="submitBtn" onclick="submitForm()">✓ Valider mon inscription</button>
         </div>
       </div>
-      
-      <!-- SECTION 3: SUCCÈS -->
       <div class="success-message" id="successMessage">
         <div class="success-icon">✓</div>
         <h2>🎉 Inscription enregistrée !</h2>
@@ -145,9 +140,8 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
     </form>
   </div>
 </div>
-
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzilS5E5_b7K1umhy2gjwmMRQoIX2EYldFUNWvq_38-1KSP8n971lP0RFxvyRiz88dd/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxiWT6WdiuvzYsPQ4IbRSn-UDA9m-PVJ9F-ivYVEzP0cGEfeIn_TOVfRPnZgqN-Ppyi/exec';
 let workshopsList = [];
 let selections = { 1: '', 2: '', 3: '', 4: '', 5: '' };
 let currentToken = '';
@@ -158,7 +152,6 @@ window.onload = async function() {
   const loadingError = document.getElementById('loadingError');
   overlay.classList.add('active');
   loadingText.textContent = 'Chargement des ateliers...';
-  
   try {
     await fetchWorkshops();
     const urlParams = new URLSearchParams(window.location.search);
@@ -186,54 +179,48 @@ async function fetchWorkshops() {
 }
 
 async function loadExistingRegistration(token) {
-  const response = await fetch(`${SCRIPT_URL}?token=${token}`);
+  const response = await fetch(SCRIPT_URL + '?token=' + token);
   const data = await response.json();
   if (data.error) throw new Error(data.error);
-  
   document.getElementById('lastName').value = data['Nom'] || '';
   document.getElementById('firstName').value = data['Prénom'] || '';
   document.getElementById('establishment').value = data['Établissement'] || '';
   document.getElementById('jobTitle').value = data['Fonction'] || '';
   document.getElementById('email').value = data['Email'] || '';
-  
   document.getElementById('pres_mer_matin').checked = data['Mercredi Matin'] === 'Oui';
   document.getElementById('pres_mer_aprem').checked = data['Mercredi Après-midi'] === 'Oui';
   document.getElementById('pres_jeu_matin').checked = data['Jeudi Matin'] === 'Oui';
   document.getElementById('pres_jeu_aprem').checked = data['Jeudi Après-midi'] === 'Oui';
-  
   selections[1] = data['Choix 1'] || '';
   selections[2] = data['Choix 2'] || '';
   selections[3] = data['Choix 3'] || '';
   selections[4] = data['Choix 4'] || '';
   selections[5] = data['Choix 5'] || '';
-  
   populateDropdowns();
   if (selections[1]) displayWorkshopDetail(selections[1]);
 }
 
 function populateDropdowns() {
   for (let i = 1; i <= 5; i++) {
-    const select = document.getElementById(`choice${i}`);
+    const select = document.getElementById('choice' + i);
     const currentValue = selections[i];
     select.innerHTML = '<option value="">-- Sélectionnez un atelier --</option>';
-    
     workshopsList.forEach(ws => {
       const isSelectedElsewhere = Object.keys(selections).some(k => parseInt(k) !== i && selections[k] === ws.id);
       if (!isSelectedElsewhere) {
         const opt = document.createElement('option');
         opt.value = ws.id;
-        // FORMAT DEMANDÉ : Société - Titre Atelier
-        opt.textContent = `${ws.company} - ${ws.title}`;
+        opt.textContent = ws.company + ' - ' + ws.title;
         if (ws.id === currentValue) opt.selected = true;
         select.appendChild(opt);
       }
     });
-    select.onfocus = () => displayWorkshopDetail(selections[i]);
+    select.onfocus = function() { displayWorkshopDetail(selections[i]); };
   }
 }
 
 function handleSelectionChange(choiceIndex) {
-  selections[choiceIndex] = document.getElementById(`choice${choiceIndex}`).value;
+  selections[choiceIndex] = document.getElementById('choice' + choiceIndex).value;
   populateDropdowns();
   displayWorkshopDetail(selections[choiceIndex]);
 }
@@ -244,42 +231,29 @@ function displayWorkshopDetail(workshopId) {
     detailBox.innerHTML = '<p style="color: #888; text-align: center; margin-top: 40px;">Aucun atelier sélectionné.</p>';
     return;
   }
-  const ws = workshopsList.find(item => item.id === workshopId);
+  const ws = workshopsList.find(function(item) { return item.id === workshopId; });
   if (!ws) return;
-  
-  detailBox.innerHTML = `
-    <div class="workshop-detail-header">
-      ${ws.logoUrl ? `<img src="${ws.logoUrl}" class="workshop-logo" alt="Logo">` : ''}
-      <div>
-        <div class="workshop-title">${ws.title}</div>
-        <div class="company-name">Société : ${ws.company}</div>
-      </div>
-    </div>
-    <div class="workshop-desc"><strong>Description :</strong><br>${ws.description}</div>
-  `;
+  detailBox.innerHTML = '<div class="workshop-detail-header"><div><div class="workshop-title">' + ws.title + '</div><div class="company-name">Société : ' + ws.company + '</div></div></div><div class="workshop-desc"><strong>Description :</strong><br>' + ws.description + '</div>';
 }
 
 function nextSection(current) {
-  const currentSection = document.getElementById(`section${current}`);
+  const currentSection = document.getElementById('section' + current);
   const requiredFields = currentSection.querySelectorAll('[required]');
   let valid = true;
-  
-  requiredFields.forEach(field => {
+  requiredFields.forEach(function(field) {
     if (!field.value.trim()) { valid = false; field.style.borderColor = '#e74c3c'; }
     else { field.style.borderColor = '#ddd'; }
   });
-  
   if (!valid) { alert('Veuillez remplir tous les champs obligatoires.'); return; }
-  
-  document.getElementById(`section${current}`).classList.remove('active');
-  document.getElementById(`section${current + 1}`).classList.add('active');
+  document.getElementById('section' + current).classList.remove('active');
+  document.getElementById('section' + (current + 1)).classList.add('active');
   document.getElementById('progressBar').style.width = ((current + 1) / 2) * 100 + '%';
   window.scrollTo(0, 0);
 }
 
 function previousSection(current) {
-  document.getElementById(`section${current}`).classList.remove('active');
-  document.getElementById(`section${current - 1}`).classList.add('active');
+  document.getElementById('section' + current).classList.remove('active');
+  document.getElementById('section' + (current - 1)).classList.add('active');
   document.getElementById('progressBar').style.width = ((current - 1) / 2) * 100 + '%';
   window.scrollTo(0, 0);
 }
@@ -293,30 +267,17 @@ function generateToken() {
 }
 
 async function submitForm() {
-  console.log("🔵 Bouton cliqué. Début de la soumission.");
-  
-  // 1. Vérification stricte des 5 choix
   const missing = [];
   for (let i = 1; i <= 5; i++) {
     if (!selections[i]) missing.push(i);
   }
-  
   if (missing.length > 0) {
-    // ✅ CORRECTION CRITIQUE : backticks pour permettre le saut de ligne
-    alert(`⚠️ Veuillez sélectionner vos 5 choix d'ateliers.\nChoix manquants : ${missing.join(', ')}`);
-    console.log("🔴 Soumission annulée : choix manquants", missing);
+    alert('⚠️ Veuillez sélectionner vos 5 choix d\'ateliers.\nChoix manquants : ' + missing.join(', '));
     return;
   }
-
-  // 2. Génération du token si inexistant
-  if (!currentToken) {
-    currentToken = generateToken();
-    console.log("🟢 Nouveau token généré :", currentToken);
-  }
-
-  // 3. Construction du payload
+  if (!currentToken) { currentToken = generateToken(); }
   const payload = {
-    action: window.location.search.includes('token=' + currentToken) ? 'update' : 'saveRegistration',
+    action: window.location.search.indexOf('token=' + currentToken) !== -1 ? 'update' : 'saveRegistration',
     token: currentToken,
     lastName: document.getElementById('lastName').value.trim(),
     firstName: document.getElementById('firstName').value.trim(),
@@ -331,20 +292,13 @@ async function submitForm() {
     },
     choices: selections
   };
-  
-  console.log("📦 Payload prêt à être envoyé :", payload);
-
-  // 4. Affichage du chargement
   const overlay = document.getElementById('loadingOverlay');
   document.getElementById('loadingText').textContent = 'Envoi en cours...';
   document.getElementById('loadingSubtext').textContent = 'Sauvegarde et envoi de l\'email de confirmation...';
   overlay.classList.add('active');
-
-  // 5. Envoi de la requête avec timeout pour éviter le blocage infini
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // Timeout de 15 secondes
-    
+    const timeoutId = setTimeout(function() { controller.abort(); }, 15000);
     await fetch(SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
@@ -352,24 +306,17 @@ async function submitForm() {
       body: JSON.stringify(payload),
       signal: controller.signal
     });
-    
     clearTimeout(timeoutId);
-    console.log("✅ Requête envoyée. Affichage du succès.");
-    
-    // Petit délai pour laisser le temps au serveur de traiter
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    await new Promise(function(resolve) { setTimeout(resolve, 1000); });
     document.getElementById('section1').classList.remove('active');
     document.getElementById('section2').classList.remove('active');
     document.querySelector('.progress-bar').style.display = 'none';
     document.getElementById('successMessage').classList.add('show');
     document.getElementById('successMessage').style.display = 'block';
     window.scrollTo(0, 0);
-    
   } catch (err) {
-    console.error("❌ Erreur critique lors de la sauvegarde :", err);
+    console.error("Erreur critique lors de la sauvegarde :", err);
     overlay.classList.remove('active');
-    
     if (err.name === 'AbortError') {
       alert("⚠️ Le délai d'attente a été dépassé. Votre inscription a probablement été enregistrée. Vérifiez vos emails.");
     } else {
