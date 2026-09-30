@@ -63,88 +63,91 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 </head>
 <body>
 <div id="loadingOverlay">
-<div class="loading-spinner"></div>
-<div class="loading-text" id="loadingText">Chargement...</div>
-<div class="loading-subtext" id="loadingSubtext">Veuillez patienter quelques instants</div>
-<div class="loading-error" id="loadingError"></div>
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loadingText">Chargement...</div>
+  <div class="loading-subtext" id="loadingSubtext">Veuillez patienter quelques instants</div>
+  <div class="loading-error" id="loadingError"></div>
 </div>
 <div class="container">
-<div class="header">
-<div class="header-logo-wrapper">
-<img src="logo-aamb.png" alt="Logo AAMB">
+  <div class="header">
+    <div class="header-logo-wrapper">
+      <img src="logo-aamb.png" alt="Logo AAMB">
+    </div>
+    <h1>AAMB - JTB 2026 - Ateliers v0.11</h1>
+    <p class="subtitle">Formulaire d'Inscription aux Ateliers</p>
+  </div>
+  <div class="form-container">
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressBar" style="width: 50%"></div>
+    </div>
+    <form id="atelierForm">
+      <!-- SECTION 1: INFORMATIONS -->
+      <div class="section active" id="section1">
+        <h2 class="section-title">👤 Vos Informations</h2>
+        <div class="sub-section">
+          <div class="form-group"><label class="required">Nom</label><input type="text" id="lastName" required></div>
+          <div class="form-group"><label class="required">Prénom</label><input type="text" id="firstName" required></div>
+          <div class="form-group"><label class="required">Établissement</label><input type="text" id="establishment" required></div>
+          <div class="form-group"><label class="required">Fonction</label><input type="text" id="jobTitle" required></div>
+          <div class="form-group"><label class="required">Adresse e-mail</label><input type="email" id="email" required></div>
+        </div>
+        <div class="sub-section">
+          <div class="sub-section-title">📅 Vos Présences</div>
+          <p style="color: #666; font-size: 13px; margin-bottom: 15px;">Cochez les créneaux où vous serez présent(e) :</p>
+          <div class="checkbox-group">
+            <label class="checkbox-item"><input type="checkbox" id="pres_mer_matin"><span>Mercredi Matin</span></label>
+            <label class="checkbox-item"><input type="checkbox" id="pres_mer_aprem"><span>Mercredi Après-midi</span></label>
+            <label class="checkbox-item"><input type="checkbox" id="pres_jeu_matin"><span>Jeudi Matin</span></label>
+            <label class="checkbox-item"><input type="checkbox" id="pres_jeu_aprem"><span>Jeudi Après-midi</span></label>
+          </div>
+        </div>
+        <div class="buttons">
+          <button type="button" class="btn-primary" onclick="nextSection(1)" style="width: 100%;">Choisir mes ateliers →</button>
+        </div>
+      </div>
+      
+      <!-- SECTION 2: CHOIX DES ATELIERS -->
+      <div class="section" id="section2">
+        <h2 class="section-title">🛠️ Choix des Ateliers</h2>
+        <div class="info-box">
+          📌 <strong>Information :</strong> Veuillez classer vos choix par ordre de préférence. Sur vos 5 choix, <strong>2 ateliers vous seront garantis</strong> (et plus selon les disponibilités).
+        </div>
+        <div class="split-layout">
+          <div class="frame-top">
+            <div class="sub-section-title">Sélectionnez vos 5 vœux</div>
+            <div class="form-group"><label for="choice1">Choix 1 (Priorité 1) :</label><select id="choice1" onchange="handleSelectionChange(1)"><option value="">-- Sélectionnez un atelier --</option></select></div>
+            <div class="form-group"><label for="choice2">Choix 2 :</label><select id="choice2" onchange="handleSelectionChange(2)"><option value="">-- Sélectionnez un atelier --</option></select></div>
+            <div class="form-group"><label for="choice3">Choix 3 :</label><select id="choice3" onchange="handleSelectionChange(3)"><option value="">-- Sélectionnez un atelier --</option></select></div>
+            <div class="form-group"><label for="choice4">Choix 4 :</label><select id="choice4" onchange="handleSelectionChange(4)"><option value="">-- Sélectionnez un atelier --</option></select></div>
+            <div class="form-group"><label for="choice5">Choix 5 :</label><select id="choice5" onchange="handleSelectionChange(5)"><option value="">-- Sélectionnez un atelier --</option></select></div>
+          </div>
+          <div class="frame-bottom" id="workshop-detail-box">
+            <p style="color: #888; text-align: center; margin-top: 40px;">Sélectionnez une liste de choix au-dessus pour voir le détail de l'atelier ici.</p>
+          </div>
+        </div>
+        <div class="buttons">
+          <button type="button" class="btn-secondary" onclick="previousSection(2)">← Retour aux informations</button>
+          <button type="button" class="btn-primary" id="submitBtn" onclick="submitForm()">✓ Valider mon inscription</button>
+        </div>
+      </div>
+      
+      <!-- SECTION 3: SUCCÈS -->
+      <div class="success-message" id="successMessage">
+        <div class="success-icon">✓</div>
+        <h2>🎉 Inscription enregistrée !</h2>
+        <p>Vos vœux pour les ateliers ont bien été pris en compte.</p>
+        <p style="margin-top: 10px; color: #666; font-size: 14px;">Un email de confirmation avec un lien de modification vous a été envoyé.</p>
+        <p style="margin-top: 25px; padding: 15px; background: #e8f4fd; border-radius: 8px; color: #0a4c6a; font-size: 15px; line-height: 1.5;">
+          ℹ️ <strong>Une seule inscription par personne.</strong><br>
+          Vous pouvez modifier vos choix à tout moment en utilisant le lien présent dans l'email de confirmation que vous venez de recevoir.
+        </p>
+      </div>
+    </form>
+  </div>
 </div>
-<h1>AAMB - JTB 2026 - Ateliers v0.08</h1>
-<p class="subtitle">Formulaire d'Inscription aux Ateliers</p>
-</div>
-<div class="form-container">
-<div class="progress-bar">
-<div class="progress-fill" id="progressBar" style="width: 50%"></div>
-</div>
-<form id="atelierForm">
-<!-- SECTION 1: INFORMATIONS -->
-<div class="section active" id="section1">
-<h2 class="section-title">👤 Vos Informations</h2>
-<div class="sub-section">
-<div class="form-group"><label class="required">Nom</label><input type="text" id="lastName" required></div>
-<div class="form-group"><label class="required">Prénom</label><input type="text" id="firstName" required></div>
-<div class="form-group"><label class="required">Établissement</label><input type="text" id="establishment" required></div>
-<div class="form-group"><label class="required">Fonction</label><input type="text" id="jobTitle" required></div>
-<div class="form-group"><label class="required">Adresse e-mail</label><input type="email" id="email" required></div>
-</div>
-<div class="sub-section">
-<div class="sub-section-title">📅 Vos Présences</div>
-<p style="color: #666; font-size: 13px; margin-bottom: 15px;">Cochez les créneaux où vous serez présent(e) :</p>
-<div class="checkbox-group">
-<label class="checkbox-item"><input type="checkbox" id="pres_mer_matin"><span>Mercredi Matin</span></label>
-<label class="checkbox-item"><input type="checkbox" id="pres_mer_aprem"><span>Mercredi Après-midi</span></label>
-<label class="checkbox-item"><input type="checkbox" id="pres_jeu_matin"><span>Jeudi Matin</span></label>
-<label class="checkbox-item"><input type="checkbox" id="pres_jeu_aprem"><span>Jeudi Après-midi</span></label>
-</div>
-</div>
-<div class="buttons">
-<button type="button" class="btn-primary" onclick="nextSection(1)" style="width: 100%;">Choisir mes ateliers →</button>
-</div>
-</div>
-<!-- SECTION 2: CHOIX DES ATELIERS -->
-<div class="section" id="section2">
-<h2 class="section-title">🛠️ Choix des Ateliers</h2>
-<div class="info-box">
-📌 <strong>Information :</strong> Veuillez classer vos choix par ordre de préférence. Sur vos 5 choix, <strong>2 ateliers vous seront garantis</strong> (et plus selon les disponibilités).
-</div>
-<div class="split-layout">
-<div class="frame-top">
-<div class="sub-section-title">Sélectionnez vos 5 vœux</div>
-<div class="form-group"><label for="choice1">Choix 1 (Priorité 1) :</label><select id="choice1" onchange="handleSelectionChange(1)"><option value="">-- Sélectionnez un atelier --</option></select></div>
-<div class="form-group"><label for="choice2">Choix 2 :</label><select id="choice2" onchange="handleSelectionChange(2)"><option value="">-- Sélectionnez un atelier --</option></select></div>
-<div class="form-group"><label for="choice3">Choix 3 :</label><select id="choice3" onchange="handleSelectionChange(3)"><option value="">-- Sélectionnez un atelier --</option></select></div>
-<div class="form-group"><label for="choice4">Choix 4 :</label><select id="choice4" onchange="handleSelectionChange(4)"><option value="">-- Sélectionnez un atelier --</option></select></div>
-<div class="form-group"><label for="choice5">Choix 5 :</label><select id="choice5" onchange="handleSelectionChange(5)"><option value="">-- Sélectionnez un atelier --</option></select></div>
-</div>
-<div class="frame-bottom" id="workshop-detail-box">
-<p style="color: #888; text-align: center; margin-top: 40px;">Sélectionnez une liste de choix au-dessus pour voir le détail de l'atelier ici.</p>
-</div>
-</div>
-<div class="buttons">
-<button type="button" class="btn-secondary" onclick="previousSection(2)">← Retour aux informations</button>
-<button type="button" class="btn-primary" id="submitBtn" onclick="submitForm()">✓ Valider mon inscription</button>
-</div>
-</div>
-<!-- SECTION 3: SUCCÈS -->
-<div class="success-message" id="successMessage">
-<div class="success-icon">✓</div>
-<h2>🎉 Inscription enregistrée !</h2>
-<p>Vos vœux pour les ateliers ont bien été pris en compte.</p>
-<p style="margin-top: 10px; color: #666; font-size: 14px;">Un email de confirmation avec un lien de modification vous a été envoyé.</p>
-<p style="margin-top: 25px; padding: 15px; background: #e8f4fd; border-radius: 8px; color: #0a4c6a; font-size: 15px; line-height: 1.5;">
-  ℹ️ <strong>Une seule inscription par personne.</strong><br>
-  Vous pouvez modifier vos choix à tout moment en utilisant le lien présent dans l'email de confirmation que vous venez de recevoir.
-</p>
-</div>
-</form>
-</div>
-</div>
+
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwH9LDn17XeeUpvZGYaaQAySG1kF86OaHNfmz951WoxaQLA_ZzdMqxsL5pqSjHA0SRl/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzilS5E5_b7K1umhy2gjwmMRQoIX2EYldFUNWvq_38-1KSP8n971lP0RFxvyRiz88dd/exec';
 let workshopsList = [];
 let selections = { 1: '', 2: '', 3: '', 4: '', 5: '' };
 let currentToken = '';
@@ -178,6 +181,7 @@ async function fetchWorkshops() {
   const response = await fetch(SCRIPT_URL + '?action=getWorkshops');
   if (!response.ok) throw new Error("Erreur réseau lors du chargement des ateliers");
   workshopsList = await response.json();
+  if (workshopsList.error) throw new Error(workshopsList.error);
   populateDropdowns();
 }
 
@@ -218,7 +222,7 @@ function populateDropdowns() {
       if (!isSelectedElsewhere) {
         const opt = document.createElement('option');
         opt.value = ws.id;
-        // MODIFICATION : Société - Titre Atelier
+        // FORMAT DEMANDÉ : Société - Titre Atelier
         opt.textContent = `${ws.company} - ${ws.title}`;
         if (ws.id === currentValue) opt.selected = true;
         select.appendChild(opt);
@@ -261,18 +265,11 @@ function nextSection(current) {
   let valid = true;
   
   requiredFields.forEach(field => {
-    if (!field.value.trim()) { 
-      valid = false; 
-      field.style.borderColor = '#e74c3c'; 
-    } else { 
-      field.style.borderColor = '#ddd'; 
-    }
+    if (!field.value.trim()) { valid = false; field.style.borderColor = '#e74c3c'; }
+    else { field.style.borderColor = '#ddd'; }
   });
   
-  if (!valid) { 
-    alert('Veuillez remplir tous les champs obligatoires.'); 
-    return; 
-  }
+  if (!valid) { alert('Veuillez remplir tous les champs obligatoires.'); return; }
   
   document.getElementById(`section${current}`).classList.remove('active');
   document.getElementById(`section${current + 1}`).classList.add('active');
@@ -305,7 +302,7 @@ async function submitForm() {
   }
   
   if (missing.length > 0) {
-    // ✅ CORRECTION CRITIQUE : utilisation des backticks (`) pour permettre le saut de ligne
+    // ✅ CORRECTION CRITIQUE : backticks pour permettre le saut de ligne
     alert(`⚠️ Veuillez sélectionner vos 5 choix d'ateliers.\nChoix manquants : ${missing.join(', ')}`);
     console.log("🔴 Soumission annulée : choix manquants", missing);
     return;
@@ -342,19 +339,26 @@ async function submitForm() {
   document.getElementById('loadingText').textContent = 'Envoi en cours...';
   document.getElementById('loadingSubtext').textContent = 'Sauvegarde et envoi de l\'email de confirmation...';
   overlay.classList.add('active');
-  console.log("🟡 Overlay de chargement affiché.");
 
-  // 5. Envoi de la requête
+  // 5. Envoi de la requête avec timeout pour éviter le blocage infini
   try {
-    console.log("🚀 Envoi vers :", SCRIPT_URL);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // Timeout de 15 secondes
+    
     await fetch(SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      signal: controller.signal
     });
     
-    console.log("✅ Réponse reçue (mode no-cors). Affichage du succès.");
+    clearTimeout(timeoutId);
+    console.log("✅ Requête envoyée. Affichage du succès.");
+    
+    // Petit délai pour laisser le temps au serveur de traiter
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
     document.getElementById('section1').classList.remove('active');
     document.getElementById('section2').classList.remove('active');
     document.querySelector('.progress-bar').style.display = 'none';
@@ -364,8 +368,13 @@ async function submitForm() {
     
   } catch (err) {
     console.error("❌ Erreur critique lors de la sauvegarde :", err);
-    alert("❌ Erreur lors de la sauvegarde : " + err.toString());
     overlay.classList.remove('active');
+    
+    if (err.name === 'AbortError') {
+      alert("⚠️ Le délai d'attente a été dépassé. Votre inscription a probablement été enregistrée. Vérifiez vos emails.");
+    } else {
+      alert("❌ Erreur lors de la sauvegarde : " + err.toString());
+    }
   }
 }
 </script>
