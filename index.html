@@ -73,7 +73,7 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 <div class="header-logo-wrapper">
 <img src="logo-aamb.png" alt="Logo AAMB">
 </div>
-<h1>AAMB - JTB 2026 - Ateliers v0.14</h1>
+<h1>AAMB - JTB 2026 - Ateliers v0.15</h1>
 <p class="subtitle">Formulaire d'Inscription aux Ateliers</p>
 </div>
 <div class="form-container">
@@ -91,7 +91,7 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 <div class="form-group"><label class="required">Adresse e-mail</label><input type="email" id="email" required></div>
 </div>
 <div class="sub-section">
-<div class="sub-section-title">📅 Vos Présences</div>
+<div class="sub-section-title"> Vos Présences</div>
 <p style="color: #666; font-size: 13px; margin-bottom: 15px;">Cochez les créneaux où vous serez présent(e) :</p>
 <div class="checkbox-group">
 <label class="checkbox-item"><input type="checkbox" id="pres_mer_matin"><span>Mercredi Matin</span></label>
@@ -141,7 +141,7 @@ Vous pouvez modifier vos choix à tout moment en utilisant le lien présent dans
 </div>
 </div>
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzYmWKcSDaOGzYMJtJcN1HNxaCz7SKVUBPJehECL6Y_uJWWxjE28iQGNvOs5cQCDsbZ/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6B4gutUH0bzppvBuVbz0hwoHZrPZd3G7c7jw7yT3W3ky7Rzi4j4e48nxee7pfo4ro/exec';
 let workshopsList = [];
 let selections = { 1: '', 2: '', 3: '', 4: '', 5: '' };
 let currentToken = '';
@@ -163,7 +163,7 @@ window.onload = async function() {
     }
   } catch (err) {
     console.error("Erreur :", err);
-    loadingError.textContent = "❌ Une erreur est survenue lors du chargement. Vérifiez la console (F12).";
+    loadingError.textContent = "❌ " + err.message;
     loadingError.style.display = 'block';
   } finally {
     setTimeout(() => overlay.classList.remove('active'), 500);
@@ -172,9 +172,10 @@ window.onload = async function() {
 
 async function fetchWorkshops() {
   const response = await fetch(SCRIPT_URL + '?action=getWorkshops');
-  if (!response.ok) throw new Error("Erreur réseau lors du chargement des ateliers");
-  workshopsList = await response.json();
-  if (workshopsList.error) throw new Error(workshopsList.error);
+  if (!response.ok) throw new Error("Erreur réseau");
+  const data = await response.json();
+  if (data.error) throw new Error(data.error);
+  workshopsList = data;
   populateDropdowns();
 }
 
@@ -272,7 +273,7 @@ async function submitForm() {
     if (!selections[i]) missing.push(i);
   }
   if (missing.length > 0) {
-    alert('️ Veuillez sélectionner vos 5 choix d\'ateliers.\nChoix manquants : ' + missing.join(', '));
+    alert('⚠️ Veuillez sélectionner vos 5 choix d\'ateliers.\nChoix manquants : ' + missing.join(', '));
     return;
   }
   if (!currentToken) { currentToken = generateToken(); }
@@ -315,12 +316,12 @@ async function submitForm() {
     document.getElementById('successMessage').style.display = 'block';
     window.scrollTo(0, 0);
   } catch (err) {
-    console.error("Erreur critique lors de la sauvegarde :", err);
+    console.error("Erreur critique :", err);
     overlay.classList.remove('active');
     if (err.name === 'AbortError') {
-      alert("⚠️ Le délai d'attente a été dépassé. Votre inscription a probablement été enregistrée. Vérifiez vos emails.");
+      alert("⚠️ Délai dépassé. Votre inscription a probablement été enregistrée.");
     } else {
-      alert("❌ Erreur lors de la sauvegarde : " + err.toString());
+      alert("❌ Erreur : " + err.toString());
     }
   }
 }
