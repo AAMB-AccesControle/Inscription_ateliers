@@ -94,7 +94,11 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 .quota-info { background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 12px; margin-bottom: 20px; font-size: 14px; color: #856404; }
 .quota-info strong { color: #0a4c6a; }
 .error-msg { background: #f8d7da; border: 2px solid #dc3545; color: #721c24; padding: 12px; border-radius: 8px; margin-bottom: 20px; display: none; }
-
+.atelier-card.presque-complet { background: #fff3cd; border-color: #ffc107; }
+.atelier-card.complet { background: #f8d7da; border-color: #dc3545; opacity: 1; }
+.atelier-badge.presque { background: #ffc107; color: #212529; }
+.sidebar-item.presque { background: #fff3cd; color: #856404; }
+  
 @media (max-width: 768px) {
   .ateliers-layout { grid-template-columns: 1fr; }
   .ateliers-sidebar { position: static; max-height: none; }
@@ -117,7 +121,7 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 <div class="header-logo-wrapper">
 <img src="logo-aamb.png" alt="Logo AAMB">
 </div>
-<h1>AAMB - JTB 2026 - Ateliers v0.33</h1>
+<h1>AAMB - JTB 2026 - Ateliers v0.34</h1>
 <p class="subtitle">Formulaire d'Inscription aux Ateliers</p>
 </div>
 <div class="form-container">
@@ -228,7 +232,38 @@ async function fetchAteliersState() {
     data.mesInscriptions.forEach(ins => selectedSessions.add(ins.id));
   }
 }
-
+let refreshEnCours = false;
+async function refreshStateSilently() {
+  if (refreshEnCours || !ateliersState) return;
+  refreshEnCours = true;
+  try {
+    const response = await fetch(SCRIPT_URL + '?action=getAteliersState&token=' + currentToken);
+    const data = await response.json();
+    if (data.success) {
+      ateliersState = data;
+      if (!Array.isArray(ateliersState.sessions)) ateliersState.sessions = [];
+      if (!Array.isArray(ateliersState.mesInscriptions)) ateliersState.mesInscriptions = [];
+      // Retire automatiquement les selections devenues completes (sauf si deja enregistrees)
+      const retires = [];
+      Array.from(selectedSessions).forEach(function (id) {
+        const s = ateliersState.sessions.find(x => x.id === id);
+        const dejaEnregistre = ateliersState.mesInscriptions.some(m => m.id === id);
+        if (s && s.complet && !dejaEnregistre) { selectedSessions.delete(id); retires.push(s.libelle); }
+      });
+      if (document.getElementById('section2').classList.contains('active')) {
+        renderAteliers();
+        if (retires.length) {
+          const errorMsg = document.getElementById('errorMsg');
+          errorMsg.textContent = '⚠️ Plus de place : votre sélection a été retirée pour → ' + retires.join(' | ');
+          errorMsg.style.display = 'block';
+        }
+      }
+    }
+  } catch (e) { /* silencieux : on retentera au prochain cycle */ }
+  refreshEnCours = false;
+}
+setInterval(refreshStateSilently, 30000); // toutes les 30 s (mettre 15000 si tu veux plus réactif)
+  
 async function loadExistingRegistration(token) {
   const response = await fetch(SCRIPT_URL + '?token=' + token);
   const data = await response.json();
@@ -390,9 +425,15 @@ function renderAteliers() {
       groupes[key].forEach(function (s) {
         const isSelected = selectedSessions.has(s.id);
         const isComplet = s.complet && !isSelected;
-        const cardClass = isComplet ? 'atelier-card complet' : (isSelected ? 'atelier-card selected' : 'atelier-card');
-        const badgeClass = s.complet ? 'atelier-badge complet' : 'atelier-badge places';
-        const badgeText = s.complet ? 'COMPLET' : (s.placesRestantes + '/' + s.capacite);
+        const isPresque = !s.complet && s.placesRestantes < 5;
+        let cardClass = 'atelier-card';
+        if (isSelected) cardClass += ' selected';
+        else if (isComplet) cardClass += ' complet';
+        else if (isPresque) cardClass += ' presque-complet';
+        let badgeClass, badgeText;
+        if (s.complet) { badgeClass = 'atelier-badge complet'; badgeText = 'COMPLET'; }
+        else if (isPresque) { badgeClass = 'atelier-badge presque'; badgeText = s.placesRestantes + '/' + s.capacite + ' ⚠'; }
+        else { badgeClass = 'atelier-badge places'; badgeText = s.placesRestantes + '/' + s.capacite; }
         html += '<div class="' + cardClass + '" onclick="toggleSession(\'' + s.id + '\', ' + isSelected + ')">' +
           '<input type="checkbox" ' + (isSelected ? 'checked' : '') + (isComplet ? ' disabled' : '') + ' onclick="event.stopPropagation(); toggleSession(\'' + s.id + '\', ' + isSelected + ')">' +
           '<div class="atelier-info">' +
@@ -409,7 +450,7 @@ function renderAteliers() {
   // Cadre latéral : TOUTES les sessions avec places restantes
   const sidebar = document.getElementById('sidebarList');
   sidebar.innerHTML = sessions.map(function (s) {
-    const cls = s.complet ? 'sidebar-item complet' : 'sidebar-item disponible';
+    const cls = s.complet ? 'sidebar-item complet' : (s.placesRestantes < 5 ? 'sidebar-item presque' : 'sidebar-item disponible');
     return '<div class="' + cls + '"><span>' + s.libelle + '<br><small>' + libelleCreneauFR(s) + '</small></span><span class="sidebar-count">' + s.placesRestantes + '/' + s.capacite + '</span></div>';
   }).join('');
 }
@@ -522,6 +563,7 @@ async function submitForm() {
     if (!data.success) {
       alert('❌ Erreur : ' + data.error);
       overlay.classList.remove('active');
+      await refreshStateSilently(); // remet à jour places + retire les sessions complètes
       return;
     }
     overlay.classList.remove('active');
