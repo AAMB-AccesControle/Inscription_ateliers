@@ -106,7 +106,7 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 <div class="header-logo-wrapper">
 <img src="logo-aamb.png" alt="Logo AAMB">
 </div>
-<h1>AAMB - JTB 2026 - Ateliers v0.27</h1>
+<h1>AAMB - JTB 2026 - Ateliers v0.28</h1>
 <p class="subtitle">Formulaire d'Inscription aux Ateliers</p>
 </div>
 <div class="form-container">
@@ -262,7 +262,8 @@ function sessionDayPeriod(session) {
     }
   }
   if (!day) return null;
-  const h = parseInt(String(session.heureDebut || '0').split(':')[0], 10);
+  const hm = String(session.heureDebut || '').match(/(\d{1,2}):(\d{2})/);
+  const h = hm ? parseInt(hm[1], 10) : 0;
   return day + (h < 13 ? 'Matin' : 'Aprem');
 }
 
@@ -362,32 +363,43 @@ function toggleSession(sessionId, currentlySelected) {
   const errorMsg = document.getElementById('errorMsg');
   errorMsg.style.display = 'none';
 
+  // Désinscription : on retire et on rafraîchit
   if (currentlySelected) {
     selectedSessions.delete(sessionId);
-  } else {
-    if (selectedSessions.size >= ateliersState.config.quota) {
-      errorMsg.textContent = `⚠️ Quota atteint : vous pouvez vous inscrire à ${ateliersState.config.quota} ateliers maximum à cette vague.`;
-      errorMsg.style.display = 'block';
-      return;
-    }
-    const session = ateliersState.sessions.find(s => s.id === sessionId);
-    if (session.complet) {
-      errorMsg.textContent = `⚠️ Session complète : ${session.libelle}`;
-      errorMsg.style.display = 'block';
-      return;
-    }
-    const slot = session.slot;
-    const conflit = Array.from(selectedSessions).some(id => {
-      const s = ateliersState.sessions.find(x => x.id === id);
-      return s && s.slot === slot;
-    });
-    if (conflit) {
-      errorMsg.textContent = `⚠️ Conflit horaire : cet atelier a lieu en même temps qu'un autre déjà sélectionné.`;
-      errorMsg.style.display = 'block';
-      return;
-    }
-    selectedSessions.add(sessionId);
+    renderAteliers();
+    return;
   }
+
+  const sessions = ateliersState.sessions || [];
+  const session = sessions.find(s => s.id === sessionId);
+  if (!session) { renderAteliers(); return; }
+
+  if (session.complet) {
+    errorMsg.textContent = '⚠️ Session complète : ' + session.libelle;
+    errorMsg.style.display = 'block';
+    renderAteliers();
+    return;
+  }
+
+  // Ateliers déjà sélectionnés sur le MÊME créneau : ils seront remplacés automatiquement
+  const memesCreneaux = Array.from(selectedSessions).filter(id => {
+    if (id === sessionId) return false;
+    const s = sessions.find(x => x.id === id);
+    return s && s.slot === session.slot;
+  });
+
+  // Quota calculé APRÈS remplacement éventuel (changer d'atelier sur un même créneau ne consomme pas de place en plus)
+  const tailleApres = selectedSessions.size - memesCreneaux.length + 1;
+  if (tailleApres > ateliersState.config.quota) {
+    errorMsg.textContent = '⚠️ Quota atteint : vous pouvez vous inscrire à ' + ateliersState.config.quota + ' ateliers maximum à cette vague.';
+    errorMsg.style.display = 'block';
+    renderAteliers();
+    return;
+  }
+
+  // ✅ Décoche automatiquement l'atelier concurrent, puis coche le nouveau
+  memesCreneaux.forEach(id => selectedSessions.delete(id));
+  selectedSessions.add(sessionId);
   renderAteliers();
 }
 
