@@ -106,7 +106,7 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 <div class="header-logo-wrapper">
 <img src="logo-aamb.png" alt="Logo AAMB">
 </div>
-<h1>AAMB - JTB 2026 - Ateliers v0.29</h1>
+<h1>AAMB - JTB 2026 - Ateliers v0.30</h1>
 <p class="subtitle">Formulaire d'Inscription aux Ateliers</p>
 </div>
 <div class="form-container">
@@ -176,7 +176,7 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 </div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyiej1XlYHCHBhZYHfSoZTHgvXieIQ0PkM0q-ap9Wu9bs1eszEJ5hm1zZlwzSbq5jVz/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyuzKawP1rjd6nDse3zTdspg-pgRY00-ADfYhq4xtCPaMrWs45EtlMBHLl9LJWtFl3l/exec';
 let ateliersState = null;
 let currentToken = '';
 let selectedSessions = new Set();
@@ -272,6 +272,36 @@ function sessionMatchesPresence(session, filters) {
   return key ? filters[key] === true : false;
 }
 
+function normDate(v) {
+  const s = String(v || '').trim();
+  const m = s.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return m[1] + '-' + m[2] + '-' + m[3];
+  const moMap = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06', Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' };
+  const m2 = s.match(/\b([A-Z][a-z]{2})\s+(\d{1,2})\s+(\d{4})/);
+  if (m2 && moMap[m2[1]]) return m2[3] + '-' + moMap[m2[1]] + '-' + m2[2].padStart(2, '0');
+  const d = new Date(s);
+  if (!isNaN(d)) return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  return s;
+}
+
+function normHM(v) {
+  const m = String(v || '').match(/(\d{1,2}):(\d{2})/);
+  return m ? m[1].padStart(2, '0') + ':' + m[2] : String(v || '');
+}
+
+function libelleDateFR(iso) {
+  const m = String(iso || '').match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return String(iso || '');
+  const dt = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 12, 0, 0);
+  const jours = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+  const mois = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+  return jours[dt.getDay()] + ' ' + Number(m[3]) + ' ' + mois[Number(m[2]) - 1] + ' ' + m[1];
+}
+
+function libelleCreneauFR(session) {
+  return libelleDateFR(normDate(session.date)) + ' - ' + normHM(session.heureDebut) + ' - ' + normHM(session.heureFin);
+}
+  
 function renderAteliers() {
   if (!ateliersState) return;
   const config = ateliersState.config || { vague: 1, ouvertes: true, capacite: 20, quota: 2 };
@@ -312,7 +342,7 @@ function renderAteliers() {
   // Groupement par créneau
   const groupes = {};
   filteredSessions.forEach(function (s) {
-    const key = s.date + '|' + s.heureDebut;
+    const key = normDate(s.date) + '|' + normHM(s.heureDebut);
     if (!groupes[key]) groupes[key] = [];
     groupes[key].push(s);
   });
@@ -327,10 +357,9 @@ function renderAteliers() {
     let html = '';
     Object.keys(groupes).sort().forEach(function (key) {
       const parts = key.split('|');
-      const date = parts[0];
-      const heure = parts[1];
-      const jourLabel = date === '2026-11-18' ? 'Mercredi 18' : (date === '2026-11-19' ? 'Jeudi 19' : date);
-      html += '<div class="creneau-group"><div class="creneau-header">' + jourLabel + ' — ' + heure + '</div><div class="creneau-body">';
+      const premier = groupes[key][0];
+      const headerLabel = libelleDateFR(parts[0]) + ' - ' + parts[1] + ' - ' + normHM(premier.heureFin);
+      html += '<div class="creneau-group"><div class="creneau-header">' + headerLabel + '</div><div class="creneau-body">';
       groupes[key].forEach(function (s) {
         const isSelected = selectedSessions.has(s.id);
         const isComplet = s.complet && !isSelected;
@@ -341,7 +370,7 @@ function renderAteliers() {
           '<input type="checkbox" ' + (isSelected ? 'checked' : '') + (isComplet ? ' disabled' : '') + ' onclick="event.stopPropagation(); toggleSession(\'' + s.id + '\', ' + isSelected + ')">' +
           '<div class="atelier-info">' +
           '<div class="atelier-title">' + s.libelle + '</div>' +
-          '<div class="atelier-desc">' + s.jour + ' ' + heure + '–' + s.heureFin + '</div>' +
+          '<div class="atelier-desc">' + libelleCreneauFR(s) + '</div>' +
           '<span class="' + badgeClass + '">' + badgeText + '</span>' +
           '</div></div>';
       });
@@ -354,8 +383,7 @@ function renderAteliers() {
   const sidebar = document.getElementById('sidebarList');
   sidebar.innerHTML = sessions.map(function (s) {
     const cls = s.complet ? 'sidebar-item complet' : 'sidebar-item disponible';
-    const parts = String(s.slot || '').split('|');
-    return '<div class="' + cls + '"><span>' + s.libelle + '<br><small>' + (parts[0] || '') + ' ' + (parts[1] || '') + '</small></span><span class="sidebar-count">' + s.placesRestantes + '/' + s.capacite + '</span></div>';
+    return '<div class="' + cls + '"><span>' + s.libelle + '<br><small>' + libelleCreneauFR(s) + '</small></span><span class="sidebar-count">' + s.placesRestantes + '/' + s.capacite + '</span></div>';
   }).join('');
 }
 
