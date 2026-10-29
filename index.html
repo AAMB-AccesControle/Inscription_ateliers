@@ -106,7 +106,7 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 <div class="header-logo-wrapper">
 <img src="logo-aamb.png" alt="Logo AAMB">
 </div>
-<h1>AAMB - JTB 2026 - Ateliers v0.25</h1>
+<h1>AAMB - JTB 2026 - Ateliers v0.26</h1>
 <p class="subtitle">Formulaire d'Inscription aux Ateliers</p>
 </div>
 <div class="form-container">
@@ -244,20 +244,32 @@ function getPresenceFilters() {
   };
 }
 
+function sessionDayPeriod(session) {
+  // Renvoie 'merMatin', 'merAprem', 'jeuMatin', 'jeuAprem' ou null
+  const jour = String(session.jour || '').toLowerCase();
+  let day = null;
+  if (jour.indexOf('mercredi') !== -1) day = 'mer';
+  else if (jour.indexOf('jeudi') !== -1) day = 'jeu';
+  if (!day) {
+    let d = String(session.date || session.slot || '').trim();
+    if (d.indexOf('T') !== -1) d = d.split('T')[0];
+    if (d.indexOf('/') !== -1) { const p = d.split('/'); d = p[2] + '-' + p[1] + '-' + p[0]; }
+    const dd = d.split('-')[2];
+    const map = { '17': 'mardi', '18': 'mer', '19': 'jeu', '20': 'vendredi' };
+    day = map[dd] || null;
+    if (!day && d) {
+      const dt = new Date(d + 'T12:00:00'); // midi : jamais décalé par le fuseau
+      if (!isNaN(dt)) { const wd = dt.getDay(); if (wd === 3) day = 'mer'; else if (wd === 4) day = 'jeu'; }
+    }
+  }
+  if (!day) return null;
+  const h = parseInt(String(session.heureDebut || '0').split(':')[0], 10);
+  return day + (h < 13 ? 'Matin' : 'Aprem');
+}
+
 function sessionMatchesPresence(session, filters) {
-  const date = session.date;
-  const heure = session.heureDebut;
-  if (date === '2026-11-18') {
-    const h = parseInt(heure.split(':')[0], 10);
-    if (h < 13) return filters.merMatin;
-    else return filters.merAprem;
-  }
-  if (date === '2026-11-19') {
-    const h = parseInt(heure.split(':')[0], 10);
-    if (h < 13) return filters.jeuMatin;
-    else return filters.jeuAprem;
-  }
-  return false;
+  const key = sessionDayPeriod(session);
+  return key ? filters[key] === true : false;
 }
 
 function renderAteliers() {
@@ -286,7 +298,7 @@ function renderAteliers() {
   }
 
   // Sessions filtrées par présence
-  const filteredSessions = anyPresence ? sessions.filter(s => sessionMatchesPresence(s, filters)) : sessions;
+  console.log('[Ateliers] filtres:', filters, '| sessions:', sessions.length, '| filtrées:', filteredSessions.length, '| exemple:', sessions.slice(0, 2));
 
   // Groupement par créneau
   const groupes = {};
