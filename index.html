@@ -9,7 +9,8 @@
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #0a4c6a 0%, #2e5b70 100%); min-height: 100vh; padding: 20px; }
-.container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); overflow: hidden; }
+.container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+.header { border-radius: 15px 15px 0 0; }
 .header { background: linear-gradient(135deg, #0a4c6a 0%, #1a3a4b 100%); color: white; padding: 30px; text-align: center; }
 .header-logo-wrapper { background: white; display: inline-block; padding: 12px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); margin-bottom: 15px; }
 .header-logo-wrapper img { max-width: 140px; height: auto; display: block; }
@@ -81,7 +82,13 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 .insc-new { background: #fff3cd; color: #856404; }
 .inscriptions-actuelles { background: #e8f4fd; border: 2px solid #0a4c6a; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
 .inscriptions-actuelles h3 { color: #0a4c6a; font-size: 16px; margin-bottom: 10px; }
-.inscription-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: white; border-radius: 6px; margin-bottom: 6px; }
+.inscription-item { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 10px; margin-bottom: 10px; font-size: 17px; line-height: 1.4; }
+.inscription-item span { flex: 1; }
+.inscription-item small { display: block; font-size: 14px; font-weight: 600; margin-top: 3px; opacity: 0.85; }
+.insc-row-ok  { background: #c8e6c9; border: 2px solid #2e7d32; color: #1b5e20; }
+.insc-row-new { background: #fff3c0; border: 2px solid #f9a825; color: #7a5c00; }
+.inscriptions-actuelles h3 { font-size: 20px; }
+.inscriptions-actuelles .btn-annuler { padding: 10px 18px; font-size: 14px; }
 .btn-annuler { padding: 6px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; }
 .btn-annuler:hover { background: #c82333; }
 .quota-info { background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 12px; margin-bottom: 20px; font-size: 14px; color: #856404; }
@@ -110,7 +117,7 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 <div class="header-logo-wrapper">
 <img src="logo-aamb.png" alt="Logo AAMB">
 </div>
-<h1>AAMB - JTB 2026 - Ateliers v0.32</h1>
+<h1>AAMB - JTB 2026 - Ateliers v0.33</h1>
 <p class="subtitle">Formulaire d'Inscription aux Ateliers</p>
 </div>
 <div class="form-container">
@@ -345,10 +352,9 @@ function renderAteliers() {
       const s = sessions.find(x => x.id === id);
       if (!s) return '';
       const dejaEnregistre = mesInscriptions.some(function (m) { return m.id === id; });
-      const badge = dejaEnregistre
-        ? '<span class="insc-badge insc-ok">✅ Enregistré</span>'
-        : '<span class="insc-badge insc-new">➕ À enregistrer</span>';
-      return '<div class="inscription-item"><span>' + badge + '<strong>' + s.libelle + '</strong> <small style="color:#666;">(' + libelleCreneauFR(s) + ')</small></span>' +
+      const rowClass = dejaEnregistre ? 'insc-row-ok' : 'insc-row-new';
+      const statut = dejaEnregistre ? '✅ ENREGISTRÉ' : '➕ À ENREGISTRER';
+      return '<div class="inscription-item ' + rowClass + '"><span><strong>' + statut + ' — ' + s.libelle + '</strong><small>' + libelleCreneauFR(s) + '</small></span>' +
         '<button type="button" class="btn-annuler" onclick="toggleSession(\'' + id + '\', true)">✕ Annuler</button></div>';
     }).join('');
   } else {
