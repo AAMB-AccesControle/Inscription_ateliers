@@ -106,7 +106,7 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 <div class="header-logo-wrapper">
 <img src="logo-aamb.png" alt="Logo AAMB">
 </div>
-<h1>AAMB - JTB 2026 - Ateliers v0.26</h1>
+<h1>AAMB - JTB 2026 - Ateliers v0.27</h1>
 <p class="subtitle">Formulaire d'Inscription aux Ateliers</p>
 </div>
 <div class="form-container">
@@ -245,7 +245,6 @@ function getPresenceFilters() {
 }
 
 function sessionDayPeriod(session) {
-  // Renvoie 'merMatin', 'merAprem', 'jeuMatin', 'jeuAprem' ou null
   const jour = String(session.jour || '').toLowerCase();
   let day = null;
   if (jour.indexOf('mercredi') !== -1) day = 'mer';
@@ -258,7 +257,7 @@ function sessionDayPeriod(session) {
     const map = { '17': 'mardi', '18': 'mer', '19': 'jeu', '20': 'vendredi' };
     day = map[dd] || null;
     if (!day && d) {
-      const dt = new Date(d + 'T12:00:00'); // midi : jamais décalé par le fuseau
+      const dt = new Date(d + 'T12:00:00');
       if (!isNaN(dt)) { const wd = dt.getDay(); if (wd === 3) day = 'mer'; else if (wd === 4) day = 'jeu'; }
     }
   }
@@ -274,35 +273,44 @@ function sessionMatchesPresence(session, filters) {
 
 function renderAteliers() {
   if (!ateliersState) return;
-  const config = ateliersState.config;
-  const sessions = ateliersState.sessions;
-  const mesInscriptions = ateliersState.mesInscriptions || [];
+  const config = ateliersState.config || { vague: 1, ouvertes: true, capacite: 20, quota: 2 };
+  const sessions = Array.isArray(ateliersState.sessions) ? ateliersState.sessions : [];
+  const mesInscriptions = Array.isArray(ateliersState.mesInscriptions) ? ateliersState.mesInscriptions : [];
   const filters = getPresenceFilters();
   const anyPresence = filters.merMatin || filters.merAprem || filters.jeuMatin || filters.jeuAprem;
 
-  // Info quota
+  // Bandeau quota
   const quotaInfo = document.getElementById('quotaInfo');
-  quotaInfo.innerHTML = `<strong>Vague ${config.vague}</strong> — Vous pouvez vous inscrire à <strong>${config.quota} ateliers maximum</strong> (20 places par session). Actuellement : <strong>${selectedSessions.size}/${config.quota}</strong>.`;
+  quotaInfo.innerHTML = '<strong>Vague ' + config.vague + '</strong> — Vous pouvez vous inscrire à <strong>' + config.quota + ' ateliers maximum</strong> (' + config.capacite + ' places par session). Actuellement : <strong>' + selectedSessions.size + '/' + config.quota + '</strong>.';
 
-  // Inscriptions actuelles
+  // Aucune session chargée côté serveur : message explicite
+  if (!sessions.length) {
+    document.getElementById('ateliersMain').innerHTML = '<div class="info-box">⚠️ Aucune session d\'atelier n\'est chargée côté serveur. L\'organisateur doit exécuter <strong>syncWorkshops()</strong> dans l\'éditeur Apps Script, puis redéployer (Nouvelle version).</div>';
+    document.getElementById('sidebarList').innerHTML = '<em style="font-size:12px;color:#666;">Aucune session chargée.</em>';
+    return;
+  }
+
+  // Inscriptions actuelles (avec annulation)
   const inscriptionsActuelles = document.getElementById('inscriptionsActuelles');
   const inscriptionsList = document.getElementById('inscriptionsList');
   if (mesInscriptions.length > 0) {
     inscriptionsActuelles.style.display = 'block';
-    inscriptionsList.innerHTML = mesInscriptions.map(ins => {
-      const parts = ins.slot.split('|');
-      return `<div class="inscription-item"><span>${ins.libelle} <small style="color:#666;">(${parts[0]} ${parts[1]})</small></span><button class="btn-annuler" onclick="toggleSession('${ins.id}', true)">✕ Annuler</button></div>`;
+    inscriptionsList.innerHTML = mesInscriptions.map(function (ins) {
+      const parts = String(ins.slot || '').split('|');
+      return '<div class="inscription-item"><span>' + ins.libelle + ' <small style="color:#666;">(' + (parts[0] || '') + ' ' + (parts[1] || '') + ')</small></span><button type="button" class="btn-annuler" onclick="toggleSession(\'' + ins.id + '\', true)">✕ Annuler</button></div>';
     }).join('');
   } else {
     inscriptionsActuelles.style.display = 'none';
+    inscriptionsList.innerHTML = '';
   }
 
-  // Sessions filtrées par présence
+  // Sessions filtrées par présence (déclaration AVANT toute utilisation)
+  const filteredSessions = anyPresence ? sessions.filter(function (s) { return sessionMatchesPresence(s, filters); }) : sessions;
   console.log('[Ateliers] filtres:', filters, '| sessions:', sessions.length, '| filtrées:', filteredSessions.length, '| exemple:', sessions.slice(0, 2));
 
   // Groupement par créneau
   const groupes = {};
-  filteredSessions.forEach(s => {
+  filteredSessions.forEach(function (s) {
     const key = s.date + '|' + s.heureDebut;
     if (!groupes[key]) groupes[key] = [];
     groupes[key].push(s);
@@ -316,36 +324,37 @@ function renderAteliers() {
     main.innerHTML = '<div class="info-box">Aucun atelier disponible pour les créneaux sélectionnés.</div>';
   } else {
     let html = '';
-    Object.keys(groupes).sort().forEach(key => {
-      const [date, heure] = key.split('|');
-      const jour = date === '2026-11-18' ? 'Mercredi 18' : 'Jeudi 19';
-      html += `<div class="creneau-group"><div class="creneau-header">${jour} novembre — ${heure}</div><div class="creneau-body">`;
-      groupes[key].forEach(s => {
+    Object.keys(groupes).sort().forEach(function (key) {
+      const parts = key.split('|');
+      const date = parts[0];
+      const heure = parts[1];
+      const jourLabel = date === '2026-11-18' ? 'Mercredi 18' : (date === '2026-11-19' ? 'Jeudi 19' : date);
+      html += '<div class="creneau-group"><div class="creneau-header">' + jourLabel + ' — ' + heure + '</div><div class="creneau-body">';
+      groupes[key].forEach(function (s) {
         const isSelected = selectedSessions.has(s.id);
         const isComplet = s.complet && !isSelected;
         const cardClass = isComplet ? 'atelier-card complet' : (isSelected ? 'atelier-card selected' : 'atelier-card');
         const badgeClass = s.complet ? 'atelier-badge complet' : 'atelier-badge places';
-        const badgeText = s.complet ? 'COMPLET' : `${s.placesRestantes}/${s.capacite}`;
-        html += `<div class="${cardClass}" onclick="toggleSession('${s.id}', ${isSelected})">
-          <input type="checkbox" ${isSelected ? 'checked' : ''} ${isComplet ? 'disabled' : ''} onclick="event.stopPropagation(); toggleSession('${s.id}', ${isSelected})">
-          <div class="atelier-info">
-            <div class="atelier-title">${s.libelle}</div>
-            <div class="atelier-desc">${s.jour} ${heure}–${s.heureFin}</div>
-            <span class="${badgeClass}">${badgeText}</span>
-          </div>
-        </div>`;
+        const badgeText = s.complet ? 'COMPLET' : (s.placesRestantes + '/' + s.capacite);
+        html += '<div class="' + cardClass + '" onclick="toggleSession(\'' + s.id + '\', ' + isSelected + ')">' +
+          '<input type="checkbox" ' + (isSelected ? 'checked' : '') + (isComplet ? ' disabled' : '') + ' onclick="event.stopPropagation(); toggleSession(\'' + s.id + '\', ' + isSelected + ')">' +
+          '<div class="atelier-info">' +
+          '<div class="atelier-title">' + s.libelle + '</div>' +
+          '<div class="atelier-desc">' + s.jour + ' ' + heure + '–' + s.heureFin + '</div>' +
+          '<span class="' + badgeClass + '">' + badgeText + '</span>' +
+          '</div></div>';
       });
       html += '</div></div>';
     });
     main.innerHTML = html;
   }
 
-  // Sidebar
+  // Cadre latéral : TOUTES les sessions avec places restantes
   const sidebar = document.getElementById('sidebarList');
-  sidebar.innerHTML = sessions.map(s => {
+  sidebar.innerHTML = sessions.map(function (s) {
     const cls = s.complet ? 'sidebar-item complet' : 'sidebar-item disponible';
-    const parts = s.slot.split('|');
-    return `<div class="${cls}"><span>${s.libelle}<br><small>${parts[0]} ${parts[1]}</small></span><span class="sidebar-count">${s.placesRestantes}/${s.capacite}</span></div>`;
+    const parts = String(s.slot || '').split('|');
+    return '<div class="' + cls + '"><span>' + s.libelle + '<br><small>' + (parts[0] || '') + ' ' + (parts[1] || '') + '</small></span><span class="sidebar-count">' + s.placesRestantes + '/' + s.capacite + '</span></div>';
   }).join('');
 }
 
