@@ -10,8 +10,7 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #0a4c6a 0%, #2e5b70 100%); min-height: 100vh; padding: 20px; }
 .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
-.header { border-radius: 15px 15px 0 0; }
-.header { background: linear-gradient(135deg, #0a4c6a 0%, #1a3a4b 100%); color: white; padding: 30px; text-align: center; }
+.header { background: linear-gradient(135deg, #0a4c6a 0%, #1a3a4b 100%); color: white; padding: 30px; text-align: center; border-radius: 15px 15px 0 0; }
 .header-logo-wrapper { background: white; display: inline-block; padding: 12px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); margin-bottom: 15px; }
 .header-logo-wrapper img { max-width: 140px; height: auto; display: block; }
 .header h1 { font-size: 28px; margin-bottom: 8px; }
@@ -52,53 +51,46 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 .loading-text { font-size: 22px; font-weight: 600; margin-bottom: 10px; }
 .loading-subtext { font-size: 15px; opacity: 0.9; }
 .loading-error { color: #ff6b6b; font-size: 16px; margin-top: 20px; display: none; text-align: center; max-width: 80%; }
-
-/* ===== NOUVEAU : PAGE 2 ATELIERS ===== */
+/* ---- Page 2 : ateliers ---- */
+.sticky-top { position: sticky; top: 0; z-index: 40; background: #ffffff; padding: 10px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+.quota-info { background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 12px; margin-bottom: 12px; font-size: 15px; color: #856404; }
+.quota-info strong { color: #0a4c6a; }
+.error-msg { background: #f8d7da; border: 2px solid #dc3545; color: #721c24; padding: 12px; border-radius: 8px; margin-bottom: 12px; display: none; font-size: 15px; }
+.inscriptions-actuelles { background: #e8f4fd; border: 2px solid #0a4c6a; border-radius: 8px; padding: 15px; margin-bottom: 12px; }
+.inscriptions-actuelles h3 { color: #0a4c6a; font-size: 20px; margin-bottom: 10px; }
+.inscription-item { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 10px; margin-bottom: 10px; font-size: 17px; line-height: 1.4; }
+.inscription-item span { flex: 1; }
+.inscription-item small { display: block; font-size: 14px; font-weight: 600; margin-top: 3px; opacity: 0.85; }
+.insc-row-ok { background: #c8e6c9; border: 2px solid #2e7d32; color: #1b5e20; }
+.insc-row-new { background: #fff3c0; border: 2px solid #f9a825; color: #7a5c00; }
+.inscriptions-actuelles .btn-annuler { padding: 10px 18px; font-size: 14px; }
+.btn-annuler { padding: 6px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; }
+.btn-annuler:hover { background: #c82333; }
 .ateliers-layout { display: grid; grid-template-columns: 1fr 320px; gap: 20px; }
 .ateliers-main { min-width: 0; }
 .ateliers-sidebar { background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 8px; padding: 15px; position: sticky; top: 20px; max-height: calc(100vh - 40px); overflow-y: auto; }
 .ateliers-sidebar h3 { color: #0a4c6a; font-size: 16px; margin-bottom: 12px; border-bottom: 2px solid #4a8b38; padding-bottom: 6px; }
-.sidebar-item { padding: 8px 10px; margin-bottom: 6px; border-radius: 6px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
-.sidebar-item.complet { background: #f8d7da; color: #721c24; }
+.sidebar-item { padding: 8px 10px; margin-bottom: 6px; border-radius: 6px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .sidebar-item.disponible { background: #d4edda; color: #155724; }
-.sidebar-count { font-weight: bold; font-size: 12px; }
+.sidebar-item.presque { background: #fff3cd; color: #856404; }
+.sidebar-item.complet { background: #f8d7da; color: #721c24; }
+.sidebar-count { font-weight: bold; font-size: 12px; white-space: nowrap; }
 .creneau-group { margin-bottom: 25px; border: 2px solid #e9ecef; border-radius: 8px; overflow: hidden; }
 .creneau-header { background: #0a4c6a; color: white; padding: 12px 15px; font-weight: bold; font-size: 15px; }
 .creneau-body { padding: 15px; background: #f8f9fa; }
 .atelier-card { background: white; border: 2px solid #ddd; border-radius: 8px; padding: 12px; margin-bottom: 10px; cursor: pointer; transition: all 0.3s; display: flex; gap: 12px; align-items: flex-start; }
 .atelier-card:hover { border-color: #0a4c6a; background: #eef2f7; }
 .atelier-card.selected { border-color: #4a8b38; background: #d4edda; }
-.atelier-card.complet { opacity: 0.5; cursor: not-allowed; background: #f8d7da; }
+.atelier-card.presque-complet { background: #fff3cd; border-color: #ffc107; }
+.atelier-card.complet { background: #f8d7da; border-color: #dc3545; opacity: 1; cursor: not-allowed; }
 .atelier-card input[type="checkbox"] { width: 20px; height: 20px; margin-top: 2px; accent-color: #0a4c6a; }
 .atelier-info { flex: 1; }
 .atelier-title { font-weight: bold; color: #0a4c6a; font-size: 14px; margin-bottom: 4px; }
 .atelier-desc { font-size: 12px; color: #666; line-height: 1.4; }
 .atelier-badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; margin-top: 6px; }
 .atelier-badge.places { background: #4a8b38; color: white; }
-.atelier-badge.complet { background: #dc3545; color: white; }
-.sticky-top { position: sticky; top: 0; z-index: 40; background: #ffffff; padding: 10px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
-.insc-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; margin-right: 6px; }
-.insc-ok { background: #d4edda; color: #155724; }
-.insc-new { background: #fff3cd; color: #856404; }
-.inscriptions-actuelles { background: #e8f4fd; border: 2px solid #0a4c6a; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
-.inscriptions-actuelles h3 { color: #0a4c6a; font-size: 16px; margin-bottom: 10px; }
-.inscription-item { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 10px; margin-bottom: 10px; font-size: 17px; line-height: 1.4; }
-.inscription-item span { flex: 1; }
-.inscription-item small { display: block; font-size: 14px; font-weight: 600; margin-top: 3px; opacity: 0.85; }
-.insc-row-ok  { background: #c8e6c9; border: 2px solid #2e7d32; color: #1b5e20; }
-.insc-row-new { background: #fff3c0; border: 2px solid #f9a825; color: #7a5c00; }
-.inscriptions-actuelles h3 { font-size: 20px; }
-.inscriptions-actuelles .btn-annuler { padding: 10px 18px; font-size: 14px; }
-.btn-annuler { padding: 6px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; }
-.btn-annuler:hover { background: #c82333; }
-.quota-info { background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 12px; margin-bottom: 20px; font-size: 14px; color: #856404; }
-.quota-info strong { color: #0a4c6a; }
-.error-msg { background: #f8d7da; border: 2px solid #dc3545; color: #721c24; padding: 12px; border-radius: 8px; margin-bottom: 20px; display: none; }
-.atelier-card.presque-complet { background: #fff3cd; border-color: #ffc107; }
-.atelier-card.complet { background: #f8d7da; border-color: #dc3545; opacity: 1; }
 .atelier-badge.presque { background: #ffc107; color: #212529; }
-.sidebar-item.presque { background: #fff3cd; color: #856404; }
-  
+.atelier-badge.complet { background: #dc3545; color: white; }
 @media (max-width: 768px) {
   .ateliers-layout { grid-template-columns: 1fr; }
   .ateliers-sidebar { position: static; max-height: none; }
@@ -118,18 +110,15 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 </div>
 <div class="container">
 <div class="header">
-<div class="header-logo-wrapper">
-<img src="logo-aamb.png" alt="Logo AAMB">
-</div>
-<h1>AAMB - JTB 2026 - Ateliers v0.36</h1>
+<div class="header-logo-wrapper"><img src="logo-aamb.png" alt="Logo AAMB"></div>
+<h1>AAMB - JTB 2026 - Ateliers v0.37</h1>
 <p class="subtitle">Formulaire d'Inscription aux Ateliers</p>
 </div>
 <div class="form-container">
-<div class="progress-bar">
-<div class="progress-fill" id="progressBar" style="width: 50%"></div>
-</div>
+<div class="progress-bar"><div class="progress-fill" id="progressBar" style="width: 50%"></div></div>
 <form id="atelierForm">
-<!-- SECTION 1 : INFORMATIONS -->
+
+<!-- SECTION 1 -->
 <div class="section active" id="section1">
 <h2 class="section-title">👤 Vos Informations</h2>
 <div class="sub-section">
@@ -154,7 +143,7 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 </div>
 </div>
 
-<!-- SECTION 2 : CHOIX DES ATELIERS (NOUVEAU) -->
+<!-- SECTION 2 -->
 <div class="section" id="section2">
 <h2 class="section-title">🛠️ Choix des Ateliers</h2>
 <div class="sticky-top">
@@ -178,27 +167,26 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 </div>
 </div>
 
-<!-- MESSAGE DE SUCCÈS -->
+<!-- SUCCÈS -->
 <div class="success-message" id="successMessage">
 <div class="success-icon">✓</div>
 <h2>🎉 Inscription enregistrée !</h2>
 <p>Vos inscriptions aux ateliers ont bien été prises en compte.</p>
 <p style="margin-top: 10px; color: #666; font-size: 14px;">Un email de confirmation avec un lien de modification vous a été envoyé.</p>
-<p style="margin-top: 25px; padding: 15px; background: #e8f4fd; border-radius: 8px; color: #0a4c6a; font-size: 15px; line-height: 1.5;">
-ℹ️ <strong>Vous pouvez modifier vos choix à tout moment</strong> en utilisant le lien présent dans l'email de confirmation que vous venez de recevoir.
-</p>
+<p style="margin-top: 25px; padding: 15px; background: #e8f4fd; border-radius: 8px; color: #0a4c6a; font-size: 15px; line-height: 1.5;">ℹ️ <strong>Vous pouvez modifier vos choix à tout moment</strong> en utilisant le lien présent dans l'email de confirmation que vous venez de recevoir.</p>
 </div>
 </form>
 </div>
 </div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzEP6zgUucZKkLLQeh1CCuEw4gQJuiUiQM5JWsFoJZHQM91LI9xZC-07wiScgN0l_TB/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw35QqBGFyUIml8rH1jHEpW529G3d8nL5GK3bgn-Nwogd30BNo_dSC7XqGshTPfLITn/exec';
 let ateliersState = null;
 let currentToken = '';
 let selectedSessions = new Set();
+let refreshEnCours = false;
 
-window.onload = async function() {
+window.onload = async function () {
   const overlay = document.getElementById('loadingOverlay');
   const loadingText = document.getElementById('loadingText');
   const loadingError = document.getElementById('loadingError');
@@ -228,11 +216,12 @@ async function fetchAteliersState() {
   const data = await response.json();
   if (data.error) throw new Error(data.error);
   ateliersState = data;
-  if (data.mesInscriptions) {
-    data.mesInscriptions.forEach(ins => selectedSessions.add(ins.id));
-  }
+  if (!Array.isArray(ateliersState.sessions)) ateliersState.sessions = [];
+  if (!Array.isArray(ateliersState.mesInscriptions)) ateliersState.mesInscriptions = [];
+  if (!ateliersState.config) ateliersState.config = { vague: 1, ouvertes: true, capacite: 20, quota: 2, seuil: 5 };
+  ateliersState.mesInscriptions.forEach(ins => selectedSessions.add(ins.id));
 }
-let refreshEnCours = false;
+
 async function refreshStateSilently() {
   if (refreshEnCours || !ateliersState) return;
   refreshEnCours = true;
@@ -243,7 +232,6 @@ async function refreshStateSilently() {
       ateliersState = data;
       if (!Array.isArray(ateliersState.sessions)) ateliersState.sessions = [];
       if (!Array.isArray(ateliersState.mesInscriptions)) ateliersState.mesInscriptions = [];
-      // Retire automatiquement les selections devenues completes (sauf si deja enregistrees)
       const retires = [];
       Array.from(selectedSessions).forEach(function (id) {
         const s = ateliersState.sessions.find(x => x.id === id);
@@ -259,11 +247,11 @@ async function refreshStateSilently() {
         }
       }
     }
-  } catch (e) { /* silencieux : on retentera au prochain cycle */ }
+  } catch (e) { /* silencieux */ }
   refreshEnCours = false;
 }
-setInterval(refreshStateSilently, 30000); // toutes les 30 s (mettre 15000 si tu veux plus réactif)
-  
+setInterval(function () { refreshStateSilently(); }, 30000);
+
 async function loadExistingRegistration(token) {
   const response = await fetch(SCRIPT_URL + '?token=' + token);
   const data = await response.json();
@@ -280,7 +268,7 @@ async function loadExistingRegistration(token) {
 }
 
 function updatePresenceFilter() {
-  if (ateliersState) renderAteliers();
+  if (ateliersState && document.getElementById('section2').classList.contains('active')) renderAteliers();
 }
 
 function getPresenceFilters() {
@@ -292,15 +280,40 @@ function getPresenceFilters() {
   };
 }
 
+// ---- Helpers dates/heures ----
+function normDate(v) {
+  const s = String(v || '').trim();
+  const m = s.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return m[1] + '-' + m[2] + '-' + m[3];
+  const moMap = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06', Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' };
+  const m2 = s.match(/\b([A-Z][a-z]{2})\s+(\d{1,2})\s+(\d{4})/);
+  if (m2 && moMap[m2[1]]) return m2[3] + '-' + moMap[m2[1]] + '-' + m2[2].padStart(2, '0');
+  const d = new Date(s);
+  if (!isNaN(d)) return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  return s;
+}
+function normHM(v) {
+  const m = String(v || '').match(/(\d{1,2}):(\d{2})/);
+  return m ? m[1].padStart(2, '0') + ':' + m[2] : String(v || '');
+}
+function libelleDateFR(iso) {
+  const m = String(iso || '').match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return String(iso || '');
+  const dt = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 12, 0, 0);
+  const jours = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+  const mois = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+  return jours[dt.getDay()] + ' ' + Number(m[3]) + ' ' + mois[Number(m[2]) - 1] + ' ' + m[1];
+}
+function libelleCreneauFR(session) {
+  return libelleDateFR(normDate(session.date)) + ' - ' + normHM(session.heureDebut) + ' - ' + normHM(session.heureFin);
+}
 function sessionDayPeriod(session) {
   const jour = String(session.jour || '').toLowerCase();
   let day = null;
   if (jour.indexOf('mercredi') !== -1) day = 'mer';
   else if (jour.indexOf('jeudi') !== -1) day = 'jeu';
   if (!day) {
-    let d = String(session.date || session.slot || '').trim();
-    if (d.indexOf('T') !== -1) d = d.split('T')[0];
-    if (d.indexOf('/') !== -1) { const p = d.split('/'); d = p[2] + '-' + p[1] + '-' + p[0]; }
+    const d = normDate(session.date);
     const dd = d.split('-')[2];
     const map = { '17': 'mardi', '18': 'mer', '19': 'jeu', '20': 'vendredi' };
     day = map[dd] || null;
@@ -314,63 +327,39 @@ function sessionDayPeriod(session) {
   const h = hm ? parseInt(hm[1], 10) : 0;
   return day + (h < 13 ? 'Matin' : 'Aprem');
 }
-
 function sessionMatchesPresence(session, filters) {
   const key = sessionDayPeriod(session);
   return key ? filters[key] === true : false;
 }
 
-function normDate(v) {
-  const s = String(v || '').trim();
-  const m = s.match(/(\d{4})-(\d{2})-(\d{2})/);
-  if (m) return m[1] + '-' + m[2] + '-' + m[3];
-  const moMap = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06', Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' };
-  const m2 = s.match(/\b([A-Z][a-z]{2})\s+(\d{1,2})\s+(\d{4})/);
-  if (m2 && moMap[m2[1]]) return m2[3] + '-' + moMap[m2[1]] + '-' + m2[2].padStart(2, '0');
-  const d = new Date(s);
-  if (!isNaN(d)) return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-  return s;
-}
-
-function normHM(v) {
-  const m = String(v || '').match(/(\d{1,2}):(\d{2})/);
-  return m ? m[1].padStart(2, '0') + ':' + m[2] : String(v || '');
-}
-
-function libelleDateFR(iso) {
-  const m = String(iso || '').match(/(\d{4})-(\d{2})-(\d{2})/);
-  if (!m) return String(iso || '');
-  const dt = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 12, 0, 0);
-  const jours = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-  const mois = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
-  return jours[dt.getDay()] + ' ' + Number(m[3]) + ' ' + mois[Number(m[2]) - 1] + ' ' + m[1];
-}
-
-function libelleCreneauFR(session) {
-  return libelleDateFR(normDate(session.date)) + ' - ' + normHM(session.heureDebut) + ' - ' + normHM(session.heureFin);
-}
-  
+// ---- Rendu principal ----
 function renderAteliers() {
   if (!ateliersState) return;
-  const config = ateliersState.config || { vague: 1, ouvertes: true, capacite: 20, quota: 2 };
+  const config = ateliersState.config || { vague: 1, ouvertes: true, capacite: 20, quota: 2, seuil: 5 };
+  const seuil = config.seuil || 5;
   const sessions = Array.isArray(ateliersState.sessions) ? ateliersState.sessions : [];
   const mesInscriptions = Array.isArray(ateliersState.mesInscriptions) ? ateliersState.mesInscriptions : [];
   const filters = getPresenceFilters();
   const anyPresence = filters.merMatin || filters.merAprem || filters.jeuMatin || filters.jeuAprem;
 
-  // Bandeau quota
   const quotaInfo = document.getElementById('quotaInfo');
-  quotaInfo.innerHTML = '<strong>Vague ' + config.vague + '</strong> — Vous pouvez vous inscrire à <strong>' + config.quota + ' ateliers maximum</strong> (' + config.capacite + ' places par session). Actuellement : <strong>' + selectedSessions.size + '/' + config.quota + '</strong>.';
+  if (config.quota === 0) {
+    quotaInfo.innerHTML = '<strong>Inscriptions pas encore ouvertes</strong>' + (config.dateVague1 ? ' — ouverture de la vague 1 le <strong>' + config.dateVague1 + '</strong>' : '') + '.';
+  } else {
+    let suite = '';
+    if (config.vague === 1 && config.dateVague2) suite = ' <em>(Vague 2 : +2 ateliers dès le ' + config.dateVague2 + ')</em>';
+    if (config.vague === 2 && config.dateVague3) suite = ' <em>(Vague 3 : sans limite dès le ' + config.dateVague3 + ')</em>';
+    if (config.vague === 3) suite = ' <em>(Vague 3 : inscriptions sans limite, places restantes seulement)</em>';
+    quotaInfo.innerHTML = '<strong>Vague ' + config.vague + '</strong> — vous pouvez vous inscrire à <strong>' + config.quota + ' ateliers maximum</strong> (' + config.capacite + ' places par session). Actuellement : <strong>' + selectedSessions.size + '/' + config.quota + '</strong>.' + suite;
+  }
 
-  // Aucune session chargée côté serveur : message explicite
   if (!sessions.length) {
     document.getElementById('ateliersMain').innerHTML = '<div class="info-box">⚠️ Aucune session d\'atelier n\'est chargée côté serveur. L\'organisateur doit exécuter <strong>syncWorkshops()</strong> dans l\'éditeur Apps Script, puis redéployer (Nouvelle version).</div>';
     document.getElementById('sidebarList').innerHTML = '<em style="font-size:12px;color:#666;">Aucune session chargée.</em>';
     return;
   }
 
-  // Bandeau "Vos inscriptions aux ateliers" : reflète la SÉLECTION COURANTE
-  // (une ligne disparaît dès qu'on annule, apparaît dès qu'on coche)
+  // Bandeau "Vos inscriptions aux ateliers" = sélection courante
   const inscriptionsActuelles = document.getElementById('inscriptionsActuelles');
   const inscriptionsList = document.getElementById('inscriptionsList');
   const idsSelectionnes = Array.from(selectedSessions);
@@ -397,11 +386,9 @@ function renderAteliers() {
     inscriptionsList.innerHTML = '';
   }
 
-  // Sessions filtrées par présence (déclaration AVANT toute utilisation)
   const filteredSessions = anyPresence ? sessions.filter(function (s) { return sessionMatchesPresence(s, filters); }) : sessions;
-  console.log('[Ateliers] filtres:', filters, '| sessions:', sessions.length, '| filtrées:', filteredSessions.length, '| exemple:', sessions.slice(0, 2));
+  console.log('[Ateliers] filtres:', filters, '| sessions:', sessions.length, '| filtrées:', filteredSessions.length);
 
-  // Groupement par créneau
   const groupes = {};
   filteredSessions.forEach(function (s) {
     const key = normDate(s.date) + '|' + normHM(s.heureDebut);
@@ -409,7 +396,6 @@ function renderAteliers() {
     groupes[key].push(s);
   });
 
-  // Affichage principal
   const main = document.getElementById('ateliersMain');
   if (!anyPresence) {
     main.innerHTML = '<div class="info-box">⚠️ Veuillez cocher au moins un créneau de présence dans l\'étape précédente pour voir les ateliers disponibles.</div>';
@@ -425,7 +411,7 @@ function renderAteliers() {
       groupes[key].forEach(function (s) {
         const isSelected = selectedSessions.has(s.id);
         const isComplet = s.complet && !isSelected;
-        const isPresque = !s.complet && s.placesRestantes < 5;
+        const isPresque = !s.complet && s.placesRestantes <= seuil;
         let cardClass = 'atelier-card';
         if (isSelected) cardClass += ' selected';
         else if (isComplet) cardClass += ' complet';
@@ -435,7 +421,7 @@ function renderAteliers() {
         else if (isPresque) { badgeClass = 'atelier-badge presque'; badgeText = s.placesRestantes + '/' + s.capacite + ' ⚠'; }
         else { badgeClass = 'atelier-badge places'; badgeText = s.placesRestantes + '/' + s.capacite; }
         html += '<div class="' + cardClass + '" onclick="toggleSession(\'' + s.id + '\', ' + isSelected + ')">' +
-          '<input type="checkbox" ' + (isSelected ? 'checked' : '') + (isComplet ? ' disabled' : '') + ' onclick="event.stopPropagation(); toggleSession(\'' + s.id + '\', ' + isSelected + ')">' +
+          '<input type="checkbox" ' + (isSelected ? 'checked' : '') + (isComplet ? 'disabled' : '') + ' onclick="event.stopPropagation(); toggleSession(\'' + s.id + '\', ' + isSelected + ')">' +
           '<div class="atelier-info">' +
           '<div class="atelier-title">' + s.libelle + '</div>' +
           '<div class="atelier-desc">' + libelleCreneauFR(s) + '</div>' +
@@ -447,19 +433,18 @@ function renderAteliers() {
     main.innerHTML = html;
   }
 
-  // Cadre latéral : TOUTES les sessions avec places restantes
   const sidebar = document.getElementById('sidebarList');
   sidebar.innerHTML = sessions.map(function (s) {
-    const cls = s.complet ? 'sidebar-item complet' : (s.placesRestantes < 5 ? 'sidebar-item presque' : 'sidebar-item disponible');
+    const cls = s.complet ? 'sidebar-item complet' : (s.placesRestantes <= seuil ? 'sidebar-item presque' : 'sidebar-item disponible');
     return '<div class="' + cls + '"><span>' + s.libelle + '<br><small>' + libelleCreneauFR(s) + '</small></span><span class="sidebar-count">' + s.placesRestantes + '/' + s.capacite + '</span></div>';
   }).join('');
 }
 
+// ---- Sélection / annulation ----
 function toggleSession(sessionId, currentlySelected) {
   const errorMsg = document.getElementById('errorMsg');
   errorMsg.style.display = 'none';
 
-  // Désinscription : on retire et on rafraîchit
   if (currentlySelected) {
     selectedSessions.delete(sessionId);
     renderAteliers();
@@ -477,14 +462,12 @@ function toggleSession(sessionId, currentlySelected) {
     return;
   }
 
-  // Ateliers déjà sélectionnés sur le MÊME créneau : ils seront remplacés automatiquement
   const memesCreneaux = Array.from(selectedSessions).filter(id => {
     if (id === sessionId) return false;
     const s = sessions.find(x => x.id === id);
     return s && s.slot === session.slot;
   });
 
-  // Quota calculé APRÈS remplacement éventuel (changer d'atelier sur un même créneau ne consomme pas de place en plus)
   const tailleApres = selectedSessions.size - memesCreneaux.length + 1;
   if (tailleApres > ateliersState.config.quota) {
     errorMsg.textContent = '⚠️ Quota atteint : vous pouvez vous inscrire à ' + ateliersState.config.quota + ' ateliers maximum à cette vague.';
@@ -493,12 +476,12 @@ function toggleSession(sessionId, currentlySelected) {
     return;
   }
 
-  // ✅ Décoche automatiquement l'atelier concurrent, puis coche le nouveau
   memesCreneaux.forEach(id => selectedSessions.delete(id));
   selectedSessions.add(sessionId);
   renderAteliers();
 }
 
+// ---- Navigation ----
 function nextSection(current) {
   const currentSection = document.getElementById('section' + current);
   const requiredFields = currentSection.querySelectorAll('[required]');
@@ -532,6 +515,7 @@ function generateToken() {
   });
 }
 
+// ---- Envoi ----
 async function submitForm() {
   const payload = {
     action: window.location.search.indexOf('token=') !== -1 ? 'update' : 'saveRegistration',
@@ -563,7 +547,7 @@ async function submitForm() {
     if (!data.success) {
       alert('❌ Erreur : ' + data.error);
       overlay.classList.remove('active');
-      await refreshStateSilently(); // remet à jour places + retire les sessions complètes
+      await refreshStateSilently();
       return;
     }
     overlay.classList.remove('active');
