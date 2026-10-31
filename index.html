@@ -116,7 +116,7 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 <div class="container">
 <div class="header">
 <div class="header-logo-wrapper"><img src="logo-aamb.png" alt="Logo AAMB"></div>
-<h1>AAMB - JTB 2026 - Ateliers v0.44</h1>
+<h1>AAMB - JTB 2026 - Ateliers v0.45</h1>
 <p class="subtitle">Formulaire d'Inscription aux Ateliers</p>
 </div>
 <div class="form-container">
@@ -283,7 +283,7 @@ async function refreshStateSilently() {
         renderAteliers();
         if (retires.length) {
           const errorMsg = document.getElementById('errorMsg');
-          errorMsg.textContent = '⚠️ Plus de place (ou atelier commencé) : votre sélection a été retirée pour → ' + retires.join(' | ');
+          errorMsg.textContent = '⚠️ Sélection mise à jour : ' + retires.join(' | ');
           errorMsg.style.display = 'block';
         }
       }
@@ -483,6 +483,7 @@ function renderAteliers() {
     main.innerHTML = html;
   }
 
+  // Cadre de droite : uniquement les demi-journées cochées
   const sidebar = document.getElementById('sidebarList');
   if (!anyPresence) {
     sidebar.innerHTML = '<em style="font-size:12px;color:#666;">Cochez vos demi-journées de présence (page 1) pour voir les places disponibles correspondantes.</em>';
@@ -492,6 +493,7 @@ function renderAteliers() {
       return '<div class="' + cls + '"><span>' + s.libelle + '<br><small>' + libelleCreneauFR(s) + '</small></span><span class="sidebar-count">' + s.placesRestantes + '/' + s.capacite + '</span></div>';
     }).join('');
   }
+}
 
 // ---- Sélection / annulation (avec verrou J-24h) ----
 function toggleSession(sessionId, currentlySelected) {
