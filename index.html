@@ -116,7 +116,7 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 <div class="container">
 <div class="header">
 <div class="header-logo-wrapper"><img src="logo-aamb.png" alt="Logo AAMB"></div>
-<h1>AAMB - JTB 2026 - Ateliers v0.42</h1>
+<h1>AAMB - JTB 2026 - Ateliers v0.43</h1>
 <p class="subtitle">Formulaire d'Inscription aux Ateliers</p>
 </div>
 <div class="form-container">
@@ -187,7 +187,7 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 </div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyKqFlSyokfOUtCsUB1SCtza4wn3gnI7_j8ikTWQWAaU1KkDzQnzPnO3ANyj4vTiH5p/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBL1knpqp7g_KcWIAthJ02fVO_KO11qzeWtxR3dRpi_zizxOPusWNPZJhFseVKYQJv/exec';
 const MS_24H = 24 * 3600 * 1000;
 let ateliersState = null;
 let currentToken = '';
@@ -231,7 +231,9 @@ async function fetchAteliersState() {
   if (!Array.isArray(ateliersState.mesInscriptions)) ateliersState.mesInscriptions = [];
   if (!ateliersState.config) ateliersState.config = { vague: 1, ouvertes: true, capacite: 20, quota: 2, seuil: 5 };
   if (data.nowMs) offsetMs = data.nowMs - Date.now();
-  ateliersState.mesInscriptions.forEach(ins => selectedSessions.add(ins.id));
+  ateliersState.mesInscriptions.forEach(ins => {
+    if (ateliersState.sessions.some(s => s.id === ins.id)) selectedSessions.add(ins.id);
+  });
   appliquerVerrouOuverture();
 }
 
@@ -269,8 +271,9 @@ async function refreshStateSilently() {
       const nowC = parisNowClient();
       Array.from(selectedSessions).forEach(function (id) {
         const s = ateliersState.sessions.find(x => x.id === id);
+        if (!s) { selectedSessions.delete(id); retires.push('(atelier supprimé du programme)'); return; }
         const dejaEnregistre = ateliersState.mesInscriptions.some(m => m.id === id);
-        if (s && !dejaEnregistre && (s.complet || (s.startMs && nowC >= s.startMs))) {
+        if (!dejaEnregistre && (s.complet || (s.startMs && nowC >= s.startMs))) {
           selectedSessions.delete(id);
           retires.push(s.libelle);
         }
