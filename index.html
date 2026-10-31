@@ -116,7 +116,7 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 <div class="container">
 <div class="header">
 <div class="header-logo-wrapper"><img src="logo-aamb.png" alt="Logo AAMB"></div>
-<h1>AAMB - JTB 2026 - Ateliers v0.43</h1>
+<h1>AAMB - JTB 2026 - Ateliers v0.44</h1>
 <p class="subtitle">Formulaire d'Inscription aux Ateliers</p>
 </div>
 <div class="form-container">
@@ -484,11 +484,14 @@ function renderAteliers() {
   }
 
   const sidebar = document.getElementById('sidebarList');
-  sidebar.innerHTML = sessions.map(function (s) {
-    const cls = s.complet ? 'sidebar-item complet' : (s.placesRestantes <= seuil ? 'sidebar-item presque' : 'sidebar-item disponible');
-    return '<div class="' + cls + '"><span>' + s.libelle + '<br><small>' + libelleCreneauFR(s) + '</small></span><span class="sidebar-count">' + s.placesRestantes + '/' + s.capacite + '</span></div>';
-  }).join('');
-}
+  if (!anyPresence) {
+    sidebar.innerHTML = '<em style="font-size:12px;color:#666;">Cochez vos demi-journées de présence (page 1) pour voir les places disponibles correspondantes.</em>';
+  } else {
+    sidebar.innerHTML = filteredSessions.map(function (s) {
+      const cls = s.complet ? 'sidebar-item complet' : (s.placesRestantes <= seuil ? 'sidebar-item presque' : 'sidebar-item disponible');
+      return '<div class="' + cls + '"><span>' + s.libelle + '<br><small>' + libelleCreneauFR(s) + '</small></span><span class="sidebar-count">' + s.placesRestantes + '/' + s.capacite + '</span></div>';
+    }).join('');
+  }
 
 // ---- Sélection / annulation (avec verrou J-24h) ----
 function toggleSession(sessionId, currentlySelected) {
