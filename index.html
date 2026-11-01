@@ -26,6 +26,7 @@ label { display: block; color: #333; font-weight: 600; margin-bottom: 8px; font-
 input[type="text"], input[type="email"], select { width: 100%; padding: 12px 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; transition: border-color 0.3s; font-family: inherit; }
 input:focus, select:focus { outline: none; border-color: #0a4c6a; }
 input:disabled { background: #e9ecef; color: #6c757d; cursor: not-allowed; }
+.code-input { text-transform: uppercase; font-weight: 800; letter-spacing: 2px; font-size: 18px !important; text-align: center; }
 .checkbox-group { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 8px; }
 .checkbox-item { display: flex; align-items: center; gap: 8px; background: #f8f9fa; padding: 10px 15px; border-radius: 6px; border: 2px solid #e9ecef; cursor: pointer; transition: all 0.3s; }
 .checkbox-item:hover { border-color: #0a4c6a; background: #eef2f7; }
@@ -116,7 +117,7 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 <div class="container">
 <div class="header">
 <div class="header-logo-wrapper"><img src="logo-aamb.png" alt="Logo AAMB"></div>
-<h1>AAMB - JTB 2026 - Ateliers v0.45</h1>
+<h1>AAMB - JTB 2026 - Ateliers v0.46</h1>
 <p class="subtitle">Formulaire d'Inscription aux Ateliers</p>
 </div>
 <div class="form-container">
@@ -127,6 +128,11 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 <div class="section active" id="section1">
 <h2 class="section-title">👤 Vos Informations</h2>
 <div class="fermeture-box" id="fermetureBox" style="display:none;"></div>
+<div class="sub-section" style="border-left-color: #4a8b38;">
+<h3 style="color: #0a4c6a; margin-bottom: 10px;">🔑 Votre code d'accès</h3>
+<p style="color: #666; font-size: 13px; margin-bottom: 15px;">Saisissez le <strong>code personnel</strong> reçu par email de l'AAMB. Il est obligatoire, identifie votre dossier participant et garantit qu'une seule inscription est possible par personne.</p>
+<div class="form-group"><label class="required">Code d'accès</label><input type="text" id="accessId" class="code-input" required placeholder="Ex : DT, BS, ORG1…" oninput="this.value = this.value.toUpperCase()"></div>
+</div>
 <div class="sub-section">
 <div class="form-group"><label class="required">Nom</label><input type="text" id="lastName" required></div>
 <div class="form-group"><label class="required">Prénom</label><input type="text" id="firstName" required></div>
@@ -187,10 +193,11 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 </div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBL1knpqp7g_KcWIAthJ02fVO_KO11qzeWtxR3dRpi_zizxOPusWNPZJhFseVKYQJv/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwYH-jcSzTos355kN9apN1wlSG683WYc1o7cBBpoHXRFk9ZnONSkxrvs-HOYQ1dN7RF/exec';
 const MS_24H = 24 * 3600 * 1000;
 let ateliersState = null;
-let currentToken = '';
+let currentToken = '';       // = code d'accès (ID Identification)
+let personneCourante = null;
 let selectedSessions = new Set();
 let refreshEnCours = false;
 let offsetMs = 0;
@@ -205,10 +212,15 @@ window.onload = async function () {
   loadingText.textContent = 'Chargement...';
   try {
     const urlParams = new URLSearchParams(window.location.search);
-    currentToken = urlParams.get('token') || generateToken();
-    if (urlParams.get('token')) {
+    const urlToken = (urlParams.get('token') || '').trim().toUpperCase();
+    if (urlToken) {
+      // Mode modification : code fourni par le lien email
+      currentToken = urlToken;
       loadingText.textContent = 'Chargement de votre inscription...';
       await loadExistingRegistration(currentToken);
+      const acc = document.getElementById('accessId');
+      acc.value = currentToken;
+      acc.disabled = true;
       document.getElementById('submitBtn').innerText = '✓ Mettre à jour mon inscription';
     }
     await fetchAteliersState();
@@ -222,7 +234,7 @@ window.onload = async function () {
 };
 
 async function fetchAteliersState() {
-  const response = await fetch(SCRIPT_URL + '?action=getAteliersState&token=' + currentToken);
+  const response = await fetch(SCRIPT_URL + '?action=getAteliersState&token=' + encodeURIComponent(currentToken));
   if (!response.ok) throw new Error("Erreur réseau");
   const data = await response.json();
   if (data.error) throw new Error(data.error);
@@ -244,7 +256,7 @@ function appliquerVerrouOuverture() {
   if (!box) return;
   if (!cfg || cfg.quota !== 0) {
     box.style.display = 'none';
-    document.querySelectorAll('#section1 input').forEach(function (i) { i.disabled = false; });
+    document.querySelectorAll('#section1 input').forEach(function (i) { if (i.id !== 'accessId' || !i.dataset.lockEdit) i.disabled = (i.id === 'accessId' && i.dataset.lockEdit) ? true : false; });
     const btn = document.getElementById('btnNext1');
     if (btn) btn.disabled = false;
     return;
@@ -260,7 +272,7 @@ async function refreshStateSilently() {
   if (refreshEnCours || !ateliersState) return;
   refreshEnCours = true;
   try {
-    const response = await fetch(SCRIPT_URL + '?action=getAteliersState&token=' + currentToken);
+    const response = await fetch(SCRIPT_URL + '?action=getAteliersState&token=' + encodeURIComponent(currentToken));
     const data = await response.json();
     if (data.success) {
       ateliersState = data;
@@ -294,7 +306,7 @@ async function refreshStateSilently() {
 setInterval(function () { refreshStateSilently(); }, 30000);
 
 async function loadExistingRegistration(token) {
-  const response = await fetch(SCRIPT_URL + '?token=' + token);
+  const response = await fetch(SCRIPT_URL + '?token=' + encodeURIComponent(token));
   const data = await response.json();
   if (data.error) throw new Error(data.error);
   document.getElementById('lastName').value = data['Nom'] || '';
@@ -306,6 +318,30 @@ async function loadExistingRegistration(token) {
   document.getElementById('pres_mer_aprem').checked = data['Mercredi Après-midi'] === 'Oui';
   document.getElementById('pres_jeu_matin').checked = data['Jeudi Matin'] === 'Oui';
   document.getElementById('pres_jeu_aprem').checked = data['Jeudi Après-midi'] === 'Oui';
+  document.getElementById('accessId').dataset.lockEdit = '1';
+}
+
+// ---- Vérification du code d'accès auprès du serveur ----
+async function validerCodeAcces() {
+  const id = document.getElementById('accessId').value.trim().toUpperCase();
+  if (!id) { alert('Veuillez saisir votre code d\'accès personnel.'); return false; }
+  try {
+    const response = await fetch(SCRIPT_URL + '?action=getPersonById&id=' + encodeURIComponent(id));
+    const data = await response.json();
+    if (!data.success) { alert('❌ ' + data.error); return false; }
+    personneCourante = data.person;
+    currentToken = id;
+    // Pré-remplissage depuis le référentiel Identification
+    if (personneCourante.nom) document.getElementById('lastName').value = personneCourante.nom;
+    if (personneCourante.prenom) document.getElementById('firstName').value = personneCourante.prenom;
+    if (personneCourante.etablissement) document.getElementById('establishment').value = personneCourante.etablissement;
+    if (personneCourante.fonction) document.getElementById('jobTitle').value = personneCourante.fonction;
+    if (personneCourante.email) document.getElementById('email').value = personneCourante.email;
+    return true;
+  } catch (e) {
+    alert('Erreur de connexion lors de la vérification du code. Réessayez.');
+    return false;
+  }
 }
 
 function updatePresenceFilter() {
@@ -384,7 +420,6 @@ function renderAteliers() {
   const anyPresence = filters.merMatin || filters.merAprem || filters.jeuMatin || filters.jeuAprem;
   const nowC = parisNowClient();
 
-  // Bandeau de phase (textes officiels)
   const quotaInfo = document.getElementById('quotaInfo');
   if (config.quota === 0) {
     quotaInfo.innerHTML = '⛔ <strong>Les inscriptions ne sont pas encore ouvertes.</strong> Revenez à partir du <strong>' + (config.dateVague1 || 'date à venir') + '</strong>.';
@@ -404,7 +439,6 @@ function renderAteliers() {
     return;
   }
 
-  // Bandeau "Vos inscriptions aux ateliers" = sélection courante
   const inscriptionsActuelles = document.getElementById('inscriptionsActuelles');
   const inscriptionsList = document.getElementById('inscriptionsList');
   const idsSelectionnes = Array.from(selectedSessions);
@@ -483,7 +517,6 @@ function renderAteliers() {
     main.innerHTML = html;
   }
 
-  // Cadre de droite : uniquement les demi-journées cochées
   const sidebar = document.getElementById('sidebarList');
   if (!anyPresence) {
     sidebar.innerHTML = '<em style="font-size:12px;color:#666;">Cochez vos demi-journées de présence (page 1) pour voir les places disponibles correspondantes.</em>';
@@ -552,7 +585,7 @@ function toggleSession(sessionId, currentlySelected) {
 }
 
 // ---- Navigation ----
-function nextSection(current) {
+async function nextSection(current) {
   if (ateliersState && ateliersState.config.quota === 0) {
     alert('⛔ Les inscriptions ne sont pas encore ouvertes. Revenez à partir du ' + (ateliersState.config.dateVague1 || 'date à venir') + '.');
     return;
@@ -567,6 +600,17 @@ function nextSection(current) {
   const anyPresence = document.getElementById('pres_mer_matin').checked || document.getElementById('pres_mer_aprem').checked || document.getElementById('pres_jeu_matin').checked || document.getElementById('pres_jeu_aprem').checked;
   if (!anyPresence) { alert('Veuillez cocher au moins un créneau de présence.'); return; }
   if (!valid) { alert('Veuillez remplir tous les champs obligatoires.'); return; }
+
+  // Vérification du code d'accès auprès du serveur (mode nouvelle inscription)
+  if (current === 1) {
+    const acc = document.getElementById('accessId');
+    if (!acc.disabled) {
+      const okCode = await validerCodeAcces();
+      if (!okCode) return;
+      await fetchAteliersState(); // recharge d'éventuelles inscriptions existantes de ce code
+    }
+  }
+
   currentSection.classList.remove('active');
   document.getElementById('section' + (current + 1)).classList.add('active');
   document.getElementById('progressBar').style.width = ((current + 1) / 2) * 100 + '%';
@@ -581,16 +625,12 @@ function previousSection(current) {
   window.scrollTo(0, 0);
 }
 
-function generateToken() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-}
-
 // ---- Envoi (avec contrôle des places juste avant) ----
 async function submitForm() {
+  if (!currentToken) {
+    alert('⚠️ Veuillez d\'abord saisir et valider votre code d\'accès en page 1.');
+    return;
+  }
   await refreshStateSilently();
   const sessionsP = ateliersState.sessions || [];
   const nowP = parisNowClient();
