@@ -117,7 +117,7 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 <div class="container">
 <div class="header">
 <div class="header-logo-wrapper"><img src="logo-aamb.png" alt="Logo AAMB"></div>
-<h1>AAMB - JTB 2026 - Ateliers v0.48</h1>
+<h1>AAMB - JTB 2026 - Ateliers v0.49</h1>
 <p class="subtitle">Formulaire d'Inscription aux Ateliers</p>
 </div>
 <div class="form-container">
@@ -130,8 +130,14 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 <div class="fermeture-box" id="fermetureBox" style="display:none;"></div>
 <div class="sub-section" style="border-left-color: #4a8b38;">
 <h3 style="color: #0a4c6a; margin-bottom: 10px;">🔑 Votre code d'accès</h3>
-<p style="color: #666; font-size: 13px; margin-bottom: 15px;">Saisissez le <strong>code personnel</strong> reçu par email de l'AAMB. Il est obligatoire, identifie votre dossier participant et garantit qu'une seule inscription est possible par personne.</p>
-<div class="form-group"><label class="required">Code d'accès</label><input type="text" id="accessId" class="code-input" required placeholder="Ex : DT, BS, ORG1…" oninput="this.value = this.value.toUpperCase()"></div>
+<p style="color: #666; font-size: 13px; margin-bottom: 15px;">Saisissez le <strong>code personnel</strong> reçu par email de l'AAMB, puis cliquez sur « Vérifier mon code ». Vos informations seront alors chargées automatiquement et ne seront plus modifiables.</p>
+<div class="form-group"><label class="required">Code d'accès</label>
+<div style="display: flex; gap: 10px;">
+<input type="text" id="accessId" class="code-input" required placeholder="Ex : DT, BS, ORG1…" oninput="this.value = this.value.toUpperCase()" style="flex: 1;">
+<button type="button" class="btn-primary" id="btnVerifCode" onclick="verifierCodeAcces()" style="padding: 12px 22px; font-size: 14px; white-space: nowrap;">🔎 Vérifier mon code</button>
+</div>
+<p id="codeMsg" style="display: none; margin-top: 10px; font-size: 14px; font-weight: 700;"></p>
+</div>
 </div>
 <div class="sub-section">
 <div class="form-group"><label class="required">Nom</label><input type="text" id="lastName" required></div>
@@ -193,11 +199,12 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 </div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwcoCNYpopzvp7SkLbPvQE_Amr6qWX00N3CUDF2r8wRR5rt_xyZWjPxPraCIGNY6Qxr/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzXZIHfPbamI4nAG-HrRVycAJiF4CQNlYu5CemvgZlFffvdeSfR-klha4MBBoT_xSZh/exec';
 const MS_24H = 24 * 3600 * 1000;
 let ateliersState = null;
 let currentToken = '';       // = code d'accès (ID Identification)
 let personneCourante = null;
+let codeValide = false;
 let selectedSessions = new Set();
 let refreshEnCours = false;
 let offsetMs = 0;
@@ -221,6 +228,9 @@ window.onload = async function () {
       const acc = document.getElementById('accessId');
       acc.value = currentToken;
       acc.disabled = true;
+      codeValide = true;
+      ['lastName', 'firstName', 'establishment', 'email'].forEach(function (f) { document.getElementById(f).disabled = true; });
+      document.getElementById('btnVerifCode').disabled = true;
       document.getElementById('submitBtn').innerText = '✓ Mettre à jour mon inscription';
     }
     await fetchAteliersState();
@@ -249,23 +259,26 @@ async function fetchAteliersState() {
   appliquerVerrouOuverture();
 }
 
-// ---- Verrou avant la phase 1 : page 1 informative et non modifiable ----
+// ---- Verrou avant la phase 1 / verrouillage identité après code validé ----
 function appliquerVerrouOuverture() {
   const cfg = ateliersState && ateliersState.config;
   const box = document.getElementById('fermetureBox');
   if (!box) return;
-  if (!cfg || cfg.quota !== 0) {
-    box.style.display = 'none';
-    document.querySelectorAll('#section1 input').forEach(function (i) { if (i.id !== 'accessId' || !i.dataset.lockEdit) i.disabled = (i.id === 'accessId' && i.dataset.lockEdit) ? true : false; });
-    const btn = document.getElementById('btnNext1');
-    if (btn) btn.disabled = false;
+  const btn = document.getElementById('btnNext1');
+  const btnV = document.getElementById('btnVerifCode');
+  if (cfg && cfg.quota === 0) {
+    box.innerHTML = '⛔ <strong>Les inscriptions aux ateliers ne sont pas encore ouvertes.</strong><br>Merci de revenir à partir du <strong>' + (cfg.dateVague1 || 'date à venir') + '</strong>.';
+    box.style.display = 'block';
+    document.querySelectorAll('#section1 input, #section1 button').forEach(function (el) { el.disabled = true; });
     return;
   }
-  box.innerHTML = '⛔ <strong>Les inscriptions aux ateliers ne sont pas encore ouvertes.</strong><br>Merci de revenir à partir du <strong>' + (cfg.dateVague1 || 'date à venir') + '</strong>.';
-  box.style.display = 'block';
-  document.querySelectorAll('#section1 input').forEach(function (i) { i.disabled = true; });
-  const btn = document.getElementById('btnNext1');
-  if (btn) btn.disabled = true;
+  box.style.display = 'none';
+  document.querySelectorAll('#section1 input').forEach(function (i) {
+    if (i.id === 'accessId' || i.id === 'lastName' || i.id === 'firstName' || i.id === 'establishment' || i.id === 'email') i.disabled = codeValide;
+    else i.disabled = false; // Fonction + présences restent saisissables
+  });
+  if (btnV) btnV.disabled = codeValide;
+  if (btn) btn.disabled = false;
 }
 
 async function refreshStateSilently() {
@@ -318,28 +331,51 @@ async function loadExistingRegistration(token) {
   document.getElementById('pres_mer_aprem').checked = data['Mercredi Après-midi'] === 'Oui';
   document.getElementById('pres_jeu_matin').checked = data['Jeudi Matin'] === 'Oui';
   document.getElementById('pres_jeu_aprem').checked = data['Jeudi Après-midi'] === 'Oui';
-  document.getElementById('accessId').dataset.lockEdit = '1';
 }
 
-// ---- Vérification du code d'accès auprès du serveur ----
-async function validerCodeAcces() {
+// ---- Vérification du code d'accès (bouton page 1) ----
+async function verifierCodeAcces() {
+  const msg = document.getElementById('codeMsg');
   const id = document.getElementById('accessId').value.trim().toUpperCase();
-  if (!id) { alert('Veuillez saisir votre code d\'accès personnel.'); return false; }
+  if (!id) {
+    msg.style.display = 'block';
+    msg.style.color = '#721c24';
+    msg.textContent = '⚠️ Saisissez d\'abord votre code d\'accès.';
+    return false;
+  }
+  const btnV = document.getElementById('btnVerifCode');
+  btnV.disabled = true;
+  btnV.innerText = 'Vérification…';
   try {
     const response = await fetch(SCRIPT_URL + '?action=getPersonById&id=' + encodeURIComponent(id));
     const data = await response.json();
-    if (!data.success) { alert('❌ ' + data.error); return false; }
+    if (!data.success) {
+      msg.style.display = 'block';
+      msg.style.color = '#721c24';
+      msg.textContent = '❌ ' + data.error;
+      btnV.disabled = false;
+      btnV.innerText = '🔎 Vérifier mon code';
+      return false;
+    }
     personneCourante = data.person;
     currentToken = id;
-    // Pré-remplissage depuis le référentiel Identification
+    codeValide = true;
     if (personneCourante.nom) document.getElementById('lastName').value = personneCourante.nom;
     if (personneCourante.prenom) document.getElementById('firstName').value = personneCourante.prenom;
     if (personneCourante.etablissement) document.getElementById('establishment').value = personneCourante.etablissement;
-    if (personneCourante.fonction) document.getElementById('jobTitle').value = personneCourante.fonction;
     if (personneCourante.email) document.getElementById('email').value = personneCourante.email;
+    ['accessId', 'lastName', 'firstName', 'establishment', 'email'].forEach(function (f) { document.getElementById(f).disabled = true; });
+    msg.style.display = 'block';
+    msg.style.color = '#155724';
+    msg.textContent = '✅ Code reconnu : bonjour ' + personneCourante.prenom + ' ' + personneCourante.nom + '. Vos informations sont chargées et non modifiables.';
+    await fetchAteliersState();
     return true;
   } catch (e) {
-    alert('Erreur de connexion lors de la vérification du code. Réessayez.');
+    msg.style.display = 'block';
+    msg.style.color = '#721c24';
+    msg.textContent = 'Erreur de connexion lors de la vérification du code. Réessayez.';
+    btnV.disabled = false;
+    btnV.innerText = '🔎 Vérifier mon code';
     return false;
   }
 }
@@ -601,14 +637,10 @@ async function nextSection(current) {
   if (!anyPresence) { alert('Veuillez cocher au moins un créneau de présence.'); return; }
   if (!valid) { alert('Veuillez remplir tous les champs obligatoires.'); return; }
 
-  // Vérification du code d'accès auprès du serveur (mode nouvelle inscription)
-  if (current === 1) {
-    const acc = document.getElementById('accessId');
-    if (!acc.disabled) {
-      const okCode = await validerCodeAcces();
-      if (!okCode) return;
-      await fetchAteliersState(); // recharge d'éventuelles inscriptions existantes de ce code
-    }
+  // Code d'accès : validation obligatoire avant d'aller en page 2
+  if (current === 1 && !codeValide) {
+    const okCode = await verifierCodeAcces();
+    if (!okCode) return;
   }
 
   currentSection.classList.remove('active');
