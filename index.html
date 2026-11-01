@@ -120,7 +120,7 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 <div class="container">
 <div class="header">
 <div class="header-logo-wrapper"><img src="logo-aamb.png" alt="Logo AAMB"></div>
-<h1>AAMB - JTB 2026 - Ateliers v0.50</h1>
+<h1>AAMB - JTB 2026 - Ateliers v0.51</h1>
 <p class="subtitle">Formulaire d'Inscription aux Ateliers</p>
 </div>
 <div class="form-container">
@@ -135,10 +135,8 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 <h3 style="color: #0a4c6a; margin-bottom: 10px;">🔑 Votre code d'accès</h3>
 <p style="color: #666; font-size: 13px; margin-bottom: 15px;">Saisissez le <strong>code personnel</strong> reçu par email de l'AAMB, puis cliquez sur « Vérifier mon code ». Vos informations seront chargées automatiquement (non modifiables) et vos créneaux de présence seront débloqués.</p>
 <div class="form-group"><label class="required">Code d'accès</label>
-<div style="display: flex; gap: 10px;">
-<input type="text" id="accessId" class="code-input" required placeholder="Ex : DT, BS, ORG1…" oninput="this.value = this.value.toUpperCase()" style="flex: 1;">
-<button type="button" class="btn-primary" id="btnVerifCode" onclick="verifierCodeAcces()" style="padding: 12px 22px; font-size: 14px; white-space: nowrap;">🔎 Vérifier mon code</button>
-</div>
+<input type="text" id="accessId" class="code-input" required placeholder="Ex : DT, BS, ORG1…" oninput="this.value = this.value.toUpperCase()" style="width: 100%; margin-bottom: 10px;">
+<button type="button" class="btn-primary" id="btnVerifCode" onclick="verifierCodeAcces()" style="width: 100%; padding: 12px 22px; font-size: 15px;">🔎 Vérifier mon code</button>
 <p id="codeMsg" style="display: none; margin-top: 10px; font-size: 14px; font-weight: 700;"></p>
 </div>
 </div>
