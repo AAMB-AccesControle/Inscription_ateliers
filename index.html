@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Inscription aux Ateliers - AAMB JTB 2026</title>
+<title>Inscription aux Ateliers - AAMB JTB 2026 vAZER</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0a4c6a">
 <style>
@@ -211,36 +211,59 @@ let offsetMs = 0;
 
 function parisNowClient() { return Date.now() + offsetMs; }
 
+
 window.onload = async function () {
   const overlay = document.getElementById('loadingOverlay');
   const loadingText = document.getElementById('loadingText');
   const loadingError = document.getElementById('loadingError');
   overlay.classList.add('active');
-  loadingText.textContent = 'Chargement...';
+  loadingText.textContent = 'Initialisation...';
+  
   try {
     const urlParams = new URLSearchParams(window.location.search);
     const urlToken = (urlParams.get('token') || '').trim().toUpperCase();
+    
     if (urlToken) {
-      // Mode modification : code fourni par le lien email
-      currentToken = urlToken;
-      codeValide = true;
-      loadingText.textContent = 'Chargement de votre inscription...';
-      await loadExistingRegistration(currentToken);
+      loadingText.textContent = 'Vérification de votre code d\'accès...';
       const acc = document.getElementById('accessId');
-      acc.value = currentToken;
-      acc.disabled = true;
-      document.getElementById('btnVerifCode').disabled = true;
-      document.getElementById('submitBtn').innerText = '✓ Mettre à jour mon inscription';
+      acc.value = urlToken;
+      
+      // 1. Valider le code et remplir l'identité (fonctionne pour les nouveaux ET les anciens)
+      const ok = await verifierCodeAcces();
+      
+      if (ok) {
+        loadingText.textContent = 'Chargement de vos données...';
+        
+        // 2. Essayer de charger leurs anciennes inscriptions (silencieusement)
+        try {
+          await loadExistingRegistration(urlToken);
+          document.getElementById('submitBtn').innerText = '✓ Mettre à jour mon inscription';
+        } catch (e) {
+          // "Inscription introuvable" = c'est un nouvel utilisateur, ce n'est pas une erreur, on ignore
+          console.log("Nouvel utilisateur, aucune inscription précédente à charger.");
+        }
+        
+        loadingText.textContent = 'Prêt !';
+        
+        // 💡 ASTUCE : Si tu veux que l'utilisateur arrive DIRECTEMENT sur le choix des ateliers 
+        // sans voir l'étape 1, décommente la ligne ci-dessous (enlève les //) :
+        // nextSection(1);
+      }
+    } else {
+      // Pas de token dans l'URL, on charge juste l'état des ateliers pour la page 1
+      await fetchAteliersState();
+      loadingText.textContent = 'Prêt';
     }
-    await fetchAteliersState();
   } catch (err) {
     console.error("Erreur :", err);
     loadingError.textContent = "❌ " + err.message;
     loadingError.style.display = 'block';
   } finally {
-    setTimeout(() => overlay.classList.remove('active'), 500);
+    setTimeout(() => overlay.classList.remove('active'), 600);
   }
 };
+
+  
 
 async function fetchAteliersState() {
   const response = await fetch(SCRIPT_URL + '?action=getAteliersState&token=' + encodeURIComponent(currentToken));
