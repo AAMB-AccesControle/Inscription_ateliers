@@ -164,7 +164,7 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 <!-- SECTION 2 -->
 <div class="section" id="section2">
 <h2 class="section-title">🛠️ Choix des Ateliers</h2>
-<div class="info-box engagement-box">⚠️ <strong>Engagement :</strong> l'inscription à un atelier engage à y participer. Toute annulation sera impossible <strong>moins de 24 h avant</strong> l'atelier. En revanche, l'inscription reste possible jusqu'à la dernière minute s'il reste des places.</div>
+<div class="info-box engagement-box">⚠️ <strong>Engagement :</strong> l'inscription à un atelier engage à y participer. Toute annulation sera impossible <strong>moins de 12 h avant</strong> l'atelier. En revanche, l'inscription reste possible jusqu'à la dernière minute s'il reste des places.</div>
 <div class="sticky-top">
 <div class="quota-info" id="quotaInfo"></div>
 <div class="error-msg" id="errorMsg"></div>
@@ -192,15 +192,15 @@ button { padding: 14px 30px; border: none; border-radius: 8px; font-size: 16px; 
 <h2>🎉 Inscription enregistrée !</h2>
 <p>Vos inscriptions aux ateliers ont bien été prises en compte.</p>
 <p style="margin-top: 10px; color: #666; font-size: 14px;">Un email de confirmation avec un lien de modification vous a été envoyé.</p>
-<p style="margin-top: 25px; padding: 15px; background: #e8f4fd; border-radius: 8px; color: #0a4c6a; font-size: 15px; line-height: 1.5;">ℹ️ <strong>Vous pouvez modifier vos choix</strong> via le lien de l'email de confirmation. Les inscriptions restent ouvertes durant tout le congrès ; l'annulation à un atelier ne peut se faire que jusqu'à 24 h avant chaque atelier.</p>
+<p style="margin-top: 25px; padding: 15px; background: #e8f4fd; border-radius: 8px; color: #0a4c6a; font-size: 15px; line-height: 1.5;">ℹ️ <strong>Vous pouvez modifier vos choix</strong> via le lien de l'email de confirmation. Les inscriptions restent ouvertes durant tout le congrès ; l'annulation à un atelier ne peut se faire que jusqu'à 12 h avant chaque atelier.</p>
 </div>
 </form>
 </div>
 </div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxd-OrPenxxN6qLVS3aeVukqCGlFhojVbqLzzKB8Y_9oBKOgKIcNRac53GGrN4lnO4/exec';
-const MS_24H = 24 * 3600 * 1000;
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyUUAiIAxAI9b3_KdDkV-ydJrHBi3zGIH8Xc0taxM7mWpFc5qj2n6gZsqyvzVLknddl/exec';
+const MS_12H = 12 * 3600 * 1000;
 let ateliersState = null;
 let currentToken = '';       // = code d'accès (ID Identification)
 let personneCourante = null;
@@ -595,7 +595,7 @@ function toggleSession(sessionId, currentlySelected) {
     const sessions0 = ateliersState.sessions || [];
     const s0 = sessions0.find(x => x.id === sessionId);
     const deja0 = ateliersState.mesInscriptions.some(m => m.id === sessionId);
-    if (deja0 && s0 && s0.startMs && parisNowClient() >= s0.startMs - MS_24H) {
+    if (deja0 && s0 && s0.startMs && parisNowClient() >= s0.startMs - MS_12H) {
       errorMsg.textContent = '🔒 Annulation impossible : moins de 24 h avant cet atelier (' + libelleCreneauFR(s0) + '). L\'inscription engage à y participer.';
       errorMsg.style.display = 'block';
       renderAteliers();
@@ -699,7 +699,7 @@ async function submitForm() {
   ateliersState.mesInscriptions.forEach(m => {
     if (selectedSessions.has(m.id)) return;
     const s = sessionsP.find(x => x.id === m.id);
-    if (s && s.startMs && nowP >= s.startMs - MS_24H) {
+    if (s && s.startMs && nowP >= s.startMs - MS_12H) {
       selectedSessions.add(m.id);
       problemes.push('Annulation refusée (moins de 24 h) : "' + s.libelle + '" reste inscrit');
     }
