@@ -513,7 +513,7 @@ function renderAteliers() {
       const s = sessions.find(x => x.id === id);
       if (!s) return '';
       const dejaEnregistre = mesInscriptions.some(function (m) { return m.id === id; });
-      const locked = dejaEnregistre && s.startMs && nowC >= s.startMs - MS_24H;
+      const locked = dejaEnregistre && s.startMs && nowC >= s.startMs - MS_12H;
       const rowClass = locked ? 'insc-row-lock' : (dejaEnregistre ? 'insc-row-ok' : 'insc-row-new');
       const statut = locked ? '🔒 ENGAGÉ' : (dejaEnregistre ? '✅ ENREGISTRÉ' : '➕ À ENREGISTRER');
       const action = locked
